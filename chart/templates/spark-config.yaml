@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-config
+data:
+  spark-defaults.conf: |-
+    spark.kubernetes.namespace={{ .Release.Namespace }}
+{{- if index .Values "spark-defaults.conf" -}}
+{{ range $key, $value := index .Values "spark-defaults.conf" }}
+{{ printf "# %s" $key | indent 4 }}
+{{ $value | indent 4 }}
+{{- end -}}
+{{ end }}
+  spark-env.sh: |-
+{{- if index .Values "spark-env.sh" -}}
+{{ range $key, $value := index .Values "spark-env.sh" }}
+{{ printf "# %s" $key | indent 4 }}
+{{ $value | indent 4 }}
+{{- end -}}
+{{ else }}
+{{ end }}
+  hive-site.xml: |-
+{{- if index .Values "hive-site.xml" }}
+{{ index .Values "hive-site.xml" | indent 4 }}
+{{ else }}
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <configuration>
+      <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://{{ .Release.Name }}-mariadb:{{ .Values.mariadb.primary.service.port }}/{{ .Values.mariadb.auth.database }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>org.mariadb.jdbc.Driver</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>{{ .Values.mariadb.auth.username }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>{{ .Values.mariadb.auth.password }}</value>
+      </property>
+      <property>
+        <name>hive.metastore.schema.verification</name>
+        <value>true</value>
+      </property>
+    </configuration>
+{{ end }}
+  log4j.properties: |-
+{{- if index .Values "log4j.properties" }}
+{{ index .Values "log4j.properties" | indent 4 }}
+{{ else }}
+{{ end }}
+  executor.yaml: |-
+{{- if index .Values "executor.yaml" }}
+{{ index .Values "executor.yaml" | indent 4 }}
+{{ else }}
+{{ end }}
+  driver.yaml: |-
+{{- if index .Values "driver.yaml" }}
+{{ index .Values "driver.yaml" | indent 4 }}
+{{ else }}
+{{ end }}

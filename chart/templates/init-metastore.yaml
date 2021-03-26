@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: init-metastore
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      component: init-metastore
+  template:
+    metadata:
+      labels:
+        component: init-metastore
+    spec:
+      containers:
+      - name: init-metastore
+        image: {{ .Values.jupyterhub.singleuser.image.name }}:{{ .Values.jupyterhub.singleuser.image.tag }}
+        imagePullPolicy: {{ .Values.jupyterhub.singleuser.image.pullPolicy }}
+        volumeMounts:
+        # mount spark conf dir
+        - name: "spark-config-volume"
+          mountPath: "/opt/axs/conf"
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          value: {{ .Values.jupyterhub.singleuser.extraEnv.AWS_ACCESS_KEY_ID }}
+        - name: AWS_SECRET_ACCESS_KEY
+          value: {{ .Values.jupyterhub.singleuser.extraEnv.AWS_SECRET_ACCESS_KEY }}
+        - name: AWS_DEFAULT_REGION
+          value: {{ .Values.jupyterhub.singleuser.extraEnv.AWS_DEFAULT_REGION }}
+      volumes:  
+      - name: "spark-config-volume"
+        configMap:
+          name: "spark-config"
+

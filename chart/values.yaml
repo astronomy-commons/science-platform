@@ -1,0 +1,194 @@
+nfs-server-provisioner:
+  persistence:
+    enabled: true
+    size: 10Gi
+
+mariadb:
+  auth:
+    rootPassword: root
+    username: spark
+    password: spark
+    database: spark_metastore
+
+  initdbScripts:
+    hive-schema.sh: |
+      #!/bin/bash
+      cd /tmp
+      curl -s -O https://raw.githubusercontent.com/apache/hive/release-1.2.0/metastore/scripts/upgrade/mysql/hive-txn-schema-0.13.0.mysql.sql
+      curl -s -O https://raw.githubusercontent.com/apache/hive/release-1.2.0/metastore/scripts/upgrade/mysql/hive-schema-1.2.0.mysql.sql
+      mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /tmp/hive-schema-1.2.0.mysql.sql;"
+
+jupyterhub:
+  rbac:
+    enabled: true
+  hub:
+    allowNamedServers: true
+    extraConfig:
+      run_user_as_root: |
+        c.KubeSpawner.uid = 0
+        c.Spawner.args.append("--allow-root")
+      
+      auth: |
+        import oauthenticator
+        from tornado import gen
+        import os, secrets
+        
+        class MyGitHubAuth(oauthenticator.github.GitHubOAuthenticator):
+          @gen.coroutine
+          def authenticate(self, handler, data=None):
+            userdict = yield super().authenticate(handler, data)
+            return userdict
+
+          @gen.coroutine
+          def pre_spawn_start(self, user, spawner):
+              """Pass upstream_token to spawner via environment variable"""
+              auth_state = yield user.get_auth_state()
+              if not auth_state:
+                  # auth_state not enabled
+                  return
+              spawner.environment["NB_UID"] = str(auth_state["github_user"]["id"])
+              spawner.environment["NB_USER"] = str(auth_state["github_user"]["login"])
+
+        c.JupyterHub.authenticator_class = MyGitHubAuth
+        c.Authenticator.enable_auth_state = True
+        
+  singleuser:
+    image: 
+      name: astronomycommons/public-hub-singleuser
+      tag: deploy
+      pullPolicy: Always
+    # assigns the notebook pod the service account called jupyter-spark-serviceaccount in the k8s cluster
+    # this service account is created if rbac.enabled is set to true in this Helm chart
+    # credentials are mounted in the notebook pod at /var/run/secrets/kubernetes.io/serviceaccount
+    # allows Spark (and the user) to access the Kubernetes cluster via the API at https://kubernetes.default.svc:443
+    serviceAccountName: jupyter-spark-serviceaccount
+    storage:
+      type: none
+      # mount the files spark-defaults.conf and spark-env.sh into the user notebook
+      # these alter the start-up behavior of Spark
+      extraVolumes:
+      - name: "spark-config-volume"
+        configMap:
+          name: "spark-config"
+      # jupyter configurations
+      - name: "start-notebook-volume"
+        configMap:
+          name: "start-notebook.d"
+      - name: "before-notebook-volume"
+        configMap:
+          name: "before-notebook.d"
+      # consume the nfs PVC that comes with the genesis helm chart
+      - name: "nfs-volume"
+        persistentVolumeClaim:
+          claimName: "nfs"
+      - name: "nfs-code-volume"
+        persistentVolumeClaim:
+          claimName: "nfs-code"
+      - name: "nfs-code-kernels-volume"
+        persistentVolumeClaim:
+          claimName: "nfs-code-kernels"
+      extraVolumeMounts:
+      # mount spark configurations from configMap
+      # mount spark-defaults.conf to spark-defaults.conf.static
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/spark-defaults.conf.static"
+        # subPath access the specified file within the config map
+        subPath: "spark-defaults.conf"
+      # mount spark-env.sh to spark-env.sh.static
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/spark-env.sh.static"
+        subPath: "spark-env.sh"
+      # mount hive-site.xml to hive-site.xml.static
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/hive-site.xml.static"
+        subPath: "hive-site.xml"
+      # mount executor.yaml to executor.yaml.static
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/executor.yaml.static"
+        subPath: "executor.yaml"
+      # mount the efs-backed filesystem to /nfs
+      # creates a folder for the user in /nfs and /nfs contains all other users
+      - name: "nfs-volume"
+        mountPath: "/home/{username}"
+        # subPath creates a folder within the efs filesystem for the user
+        subPath: "{username}"
+      - name: "nfs-volume"
+        mountPath: "/home"
+      - name: "nfs-code-volume"
+        mountPath: "/opt/conda/envs"
+      - name: "nfs-code-kernels-volume"
+        mountPath: "/opt/conda/share/jupyter/kernels"
+      # jupyter configurations
+      - name: "start-notebook-volume"
+        mountPath: "/usr/local/bin/start-notebook.d"
+      - name: "before-notebook-volume"
+        mountPath: "/usr/local/bin/before-notebook.d"
+
+spark-defaults.conf:
+  000-s3-defaults: |
+    spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+    spark.hadoop.fs.s3a.connection.maximum=10000
+  000-kubernetes-defaults: |
+    spark.submit.deployMode=client
+    spark.master=k8s://https://kubernetes.default.svc:443
+  000-scheduler-defaults: |
+    # scheduling options (batch size, time out)
+    spark.kubernetes.allocation.batch.size=100
+    spark.scheduler.maxRegisteredResourcesWaitingTime=600s
+    spark.scheduler.minRegisteredResourcesRatio=1.0
+  000-sql-defaults: |
+    spark.sql.execution.arrow.enabled=true
+    spark.sql.hive.metastore.sharedPrefixes=com.mysql.jdbc,org.postgresql,com.microsoft.sqlserver,oracle.jdbc,org.apache.derby
+  # 000-java-defaults: |
+  #   spark.driver.extraJavaOptions -Dderby.system.home=/tmp/derby
+  # 000-jar-defaults: |
+  #   spark.jars /usr/local/axs/python/axs/AxsUtilities-1.0-SNAPSHOT.jar
+
+spark-env.sh:
+
+start-notebook:
+  001-env-vars.sh: |
+    export SPARK_PUBLIC_DNS="${PUBLIC_URL}${JUPYTERHUB_SERVICE_PREFIX}proxy/4040/jobs/"
+    export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+
+  002-spark-defaults.sh: |
+    conf_file=$SPARK_HOME/conf/spark-defaults.conf.dynamic
+    
+    echo "" >> $conf_file
+    echo "002-spark-defaults" >> $conf_file
+    echo "spark.driver.host=$(hostname -i)" >> $conf_file
+    echo "spark.kubernetes.executor.container.image=${JUPYTER_IMAGE}" >> $conf_file
+    echo "spark.jars=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g')" >> $conf_file
+    prefix=spark.executorEnv
+    if [ -n "${NB_USER}" ]; then
+      echo "${prefix}.NB_USER ${NB_USER}" >> $conf_file
+      # echo "spark.kubernetes.executor.podNamePrefix ${NB_USER}-spark" >> $conf_file
+      echo "spark.kubernetes.driver.pod.name jupyter-${NB_USER}" | awk '{print tolower($0)}' >> $conf_file
+    fi
+    if [ -n "${NB_UID}" ]; then
+      echo "${prefix}.NB_UID ${NB_UID}" >> $conf_file
+    fi
+    echo "${prefix}.JAVA_HOME=${JAVA_HOME}" >> $conf_file
+
+  999-merge-spark-files.sh: |
+    merge () {
+      file=$1
+      static_file="$file.static"
+      dynamic_file="$file.dynamic"
+
+      if [ -f "$file" ]; then
+        rm -f $file
+      fi
+      if [ -f "$static_file" ]; then
+        cat $static_file >> $file
+      fi
+      if [ -f "$dynamic_file" ]; then
+        echo "" >> $file
+        cat $dynamic_file >> $file
+      fi
+    }
+
+    merge "$SPARK_HOME/conf/spark-defaults.conf"
+    merge "$SPARK_HOME/conf/spark-env.sh"
+    merge "$SPARK_HOME/conf/hive-site.xml"
+    merge "$SPARK_HOME/conf/executor.yaml"

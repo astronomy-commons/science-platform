@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: start-notebook.d
+data:
+{{- if index .Values "start-notebook" }}
+{{- range $name, $contents := index .Values "start-notebook" }}
+{{ $name | indent 2 }}: |-
+{{ $contents | indent 4 }}
+{{- end }}
+{{ else }}
+  none.sh: |
+    echo "No content in start-notebook.d"
+{{ end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: before-notebook.d
+data:
+{{- if index .Values "before-notebook" }}
+{{- range $name, $contents := index .Values "before-notebook" }}
+{{ $name | indent 2 }}: |-
+{{ $contents | indent 4 }}
+{{- end }}
+{{ else }}
+  none.sh: |
+    echo "No content in before-notebook.d"
+{{ end }}

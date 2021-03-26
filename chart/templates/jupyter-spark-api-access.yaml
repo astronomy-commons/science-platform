@@ -1,0 +1,66 @@
+{{- if .Values.jupyterhub.rbac.enabled -}}
+# creates a service account in the k8s cluster that
+# will have credentials assigned to it
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: jupyter-spark-serviceaccount
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: jupyter-spark-serviceaccount
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+
+---
+# creates a role that specifies a set of resources a service account bound to this
+# role can access
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  # name of the role
+  name: jupyter-spark-role
+  # specifies the namespace that the role will be restricted to
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: jupyter-spark-role
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+rules:
+# allows read / write access for pods in the namespace
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "create", "delete"]
+# allows read access for pod logs in the namespaces
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+# allows read access for events in the k8s cluster in the namespace
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["events"]
+  verbs: ["get", "list"]
+
+---
+# defines to which service accounts the above roles are assigned
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jupyter-spark-rolebinding
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: jupyter-spark-rolebinding
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+subjects:
+# apply this role binding to the following service accounts
+- kind: ServiceAccount
+  name: jupyter-spark-serviceaccount
+roleRef:
+# use the following role to specify what the above service accounts can do
+  kind: Role
+  name: jupyter-spark-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end -}}
+

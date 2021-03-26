@@ -1,0 +1,56 @@
+jupyterhub:
+  singleuser:
+    nodeSelector:
+      dirac.institute/instance-type: "notebook"
+    cpu:
+      guarantee: 3.5
+    memory:
+      guarantee: "13411M"
+
+  hub:
+    nodeSelector:
+      dirac.institute/instance-type: "service"
+  proxy:
+    chp:
+      nodeSelector:
+        dirac.institute/instance-type: "service"
+    traefik:
+      nodeSelector:
+        dirac.institute/instance-type: "service"
+  scheduling:
+    userScheduler:
+      nodeSelector:
+        dirac.institute/instance-type: "service"
+
+nfs-server-provisioner:
+  persistence:
+    storageClass: "gp2"
+    size: 200Gi
+  nodeSelector:
+    dirac.institute/instance-type: "service"
+
+mariadb:
+  primary:
+    nodeSelector:
+      dirac.institute/instance-type: "service"
+  secondary:
+    nodeSelector:
+      dirac.institute/instance-type: "service"
+
+cluster-autoscaler-chart:
+  awsRegion: "us-west-2"
+  autoDiscovery:
+    clusterName: "pufsalad"
+  nodeSelector:
+    dirac.institute/instance-type: "service"
+
+spark-defaults.conf:
+  999-executor-defaults: |
+    # options for the executor pods
+    spark.executor.instances=2
+    spark.executor.memory=1350m
+    spark.executor.cores=4
+    spark.kubernetes.executor.request.cores=3290m
+    spark.kubernetes.executor.limit.cores=3290m
+    # node selector
+    spark.kubernetes.node.selector.dirac.institute/instance-type=spark
