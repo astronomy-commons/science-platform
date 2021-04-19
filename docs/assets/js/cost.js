@@ -5,26 +5,26 @@ $('form input').on('keypress', function(e) {
 
 var ranges = {
     'num_users': [0, 100], 
-    'num_spark': [0, 128], 
+    // 'num_spark': [0, 128], 
     'cost_user': [0, 5], 
     'cost_spark': [0, 5], 
     'cost_storage': [0, 0.5],
     'node_storage': [0, 1024],
     'user_hours': [0, 24],
     'user_days': [0, 7],
-    'spark_query_hours': [0, 24]
+    'query_core_hours': [0, 1024]
 }
 
 var labels = {
     'num_users': "Number of Users", 
-    'num_spark': "Number of Spark Nodes", 
+    // 'num_spark': "Number of Spark Nodes", 
     'cost_user': "Cost of User Node ($USD/hour)", 
     'cost_spark': "Cost of Spark Node ($USD/hour)", 
     'cost_storage': "Cost of Node Storage ($USD/GB/month)",
     'node_storage': "Node Storage Size (GB)",
     'user_hours': "User Hours (hours/day)",
     'user_days': "User Days (days/week)",
-    'spark_query_hours': "Spark Query Hours (hours/day)"
+    'query_core_hours': "Spark Query Core Hours (core-hours/day/user)"
 }
 
 // From: https://stackoverflow.com/questions/40475155/does-javascript-have-a-method-that-returns-an-array-of-numbers-based-on-start-s
@@ -40,67 +40,77 @@ function linspace(startValue, stopValue, cardinality) {
 function cost(params) {
     var cost_user = params['cost_user']; // $USD/hour
     var cost_spark = params['cost_spark'];  // $USD/hour
+    var query_core_hours = params['query_core_hours']; // core-hours/day
     var cost_storage = params['cost_storage']; // $USD/GB/month
     var node_storage = params['node_storage']; // GB
     var user_hours = params['user_hours']; // hours/day
     var user_days = params['user_days']; // days/week
-    var spark_query_hours = params['spark_query_hours']; // hours/day
+    // var spark_query_hours = params['spark_query_hours']; // hours/day
     var num_users = params['num_users'];
-    var num_spark = params['num_spark'];
+    // var num_spark = params['num_spark'];
+
+    var spark_node_hours = query_core_hours / 4;
 
     var HOURS_IN_MONTH = 24*30;
+    var cost_storage_per_hour = cost_storage / HOURS_IN_MONTH;
     
     var storage_total = (
-        num_users * node_storage * cost_storage * ( 
-            (user_hours / 24)
-            +
-            num_spark * (spark_query_hours / 24)
-        )  * (user_days / 7)
-    );
+        // users
+        num_users * (
+            // each user each day
+            node_storage * cost_storage_per_hour * (
+                user_hours *  30 * (user_days / 7) + spark_node_hours
+            )
+        )
+    )
+    console.log("storage:" + storage_total);
 
     var vm_total = (
         // users
         num_users * (
-            (HOURS_IN_MONTH * cost_user) * (user_hours / 24)
+            // each user each day
+            (cost_user * user_hours * 30 * (user_days / 7))
             +
-            num_spark * (HOURS_IN_MONTH * cost_spark) * (spark_query_hours / 24)
-        ) * (user_days / 7)
+            // Spark queries for each user each day
+            (cost_spark * spark_node_hours)
+        ) 
     );
+    console.log("vm:" + vm_total);
 
     return storage_total + vm_total;
 }
 
 function getInputValues() {
     var num_users_input = document.getElementById("num_users_input");
-    var num_spark_input = document.getElementById("num_spark_input");
+    // var num_spark_input = document.getElementById("num_spark_input");
     var cost_user_input = document.getElementById("cost_user_input");
     var cost_spark_input = document.getElementById("cost_spark_input");
     var cost_storage_input = document.getElementById("cost_storage_input");
     var node_storage_input = document.getElementById("node_storage_input");
     var user_hours_input = document.getElementById("user_hours_input");
     var user_days_input = document.getElementById("user_days_input");
-    var spark_query_hours_input = document.getElementById("spark_query_hours_input");
+    var query_core_hours_input = document.getElementById("query_core_hours_input");
     
     var num_users = parseFloat(num_users_input.value);
-    var num_spark = parseFloat(num_spark_input.value);
+    // var num_spark = parseFloat(num_spark_input.value);
     var cost_user = parseFloat(cost_user_input.value);
     var cost_spark = parseFloat(cost_spark_input.value);
     var cost_storage = parseFloat(cost_storage_input.value);
     var node_storage = parseFloat(node_storage_input.value);
     var user_hours = parseFloat(user_hours_input.value);
     var user_days = parseFloat(user_days_input.value);
-    var spark_query_hours = parseFloat(spark_query_hours_input.value);
+    var query_core_hours = parseFloat(query_core_hours_input.value);
 
     return {
         'num_users': num_users, 
-        'num_spark': num_spark, 
+        // 'num_spark': num_spark, 
         'cost_user': cost_user, 
         'cost_spark': cost_spark, 
         'cost_storage': cost_storage,
         'node_storage': node_storage,
         'user_hours': user_hours,
         'user_days': user_days,
-        'spark_query_hours': spark_query_hours
+        'query_core_hours': query_core_hours
     }
 }
 
@@ -108,7 +118,7 @@ function updateCost() {
     var params = getInputValues();
     var cost_total = cost(params);
     var cost_total_span = document.getElementById("cost_total");
-    cost_total_span.innerHTML = `${cost_total.toFixed(2)}`;
+    cost_total_span.innerHTML = `${cost_total.toFixed(2)} ($USD/month)`;
 }
 
 const ctx = document.getElementById('chart').getContext('2d');

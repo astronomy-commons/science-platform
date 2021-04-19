@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Astronomy Commons Science Platform</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/astronomy_commons_logo.png" rel="icon">
+  <link href="assets/img/astronomy_commons_logo.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: Arsha - v4.1.0
+  * Template URL: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body>
+
+  <header id="header" class="fixed-top ">
+    <div class="container d-flex align-items-center">
+
+      <h1 class="logo me-auto"><a href="index.html"></a></h1>
+      <!-- <a href="index.html" class="logo me-auto"><img src="assets/img/astronomy_commons_logo.png" alt="" class="img-fluid"></a> -->
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
+          <li><a class="nav-link scrollto" href="#about">About</a></li>
+          <li><a class="nav-link scrollto" href="#publications">Publications</a></li>
+          <li><a class="nav-link scrollto" href="#cost">Cost Calculator</a></li>
+          <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
+          <li><a class="nav-link" target="_blank" href="https://github.com/astronomy-commons/science-platform">Code</a></li>
+          <li><a class="getstarted" target="_blank" href="https://demo.dirac.dev">Try It</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <section id="hero" class="d-flex align-items-center">
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+          <h1>A Science Platform for Accessing and Analyzing Large Datasets</h1>
+          <div class="d-flex justify-content-center justify-content-lg-start">
+            <a href="#about" class="btn-get-started scrollto">Learn More</a>
+            <a href="https://www.youtube.com/watch?v=fGQ1Kr7Z8jk&t=48s" class="glightbox btn-watch-video"><i class="bi bi-play-circle"></i><span>Watch Video</span></a>
+          </div>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-in" data-aos-delay="200">
+          <img src="assets/img/notebook.png" class="img-fluid" alt="">
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <main id="main">
+    <section id="about" class="about">
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title">
+          <h2>About</h2>
+        </div>
+
+        <div class="row content">
+          <div class="col-lg-12">
+            <p>
+              The next decade of astronomy will be marked by automated sky-surveys delivering 
+              large (multi-TB to PB-sized), rich, spatio-temporal data sets. Research activities 
+              with such data volumes present a challenge: downloads and local (especially 
+              single-computer) analyses are increasingly impractical (slow), and setting 
+              up (remote, distributed) data analytics tools requires technical expertise 
+              not readily available to typical astronomy groups. A possible solution is to 
+              offer remote, next-to-the-data, analysis; however, such services &mdash; 
+              <em>science platforms</em> &mdash; still face challenges of offering sufficient 
+              scalability, and ensuring the service is easy to use.
+            </p>
+            <p>
+              We build and demonstrate a solution built based on (adapted) industry standard 
+              tools and made accessible through web gateways. Our motivation is to enable 
+              the analysis of data from the Zwicky Transient Facility &mdash; a precursor 
+              to LSST &mdash; within the ZTF Partnership. This platform is built on Amazon 
+              Web Services (with Kubernetes and S3 as the orchestration and storage 
+              layers, respectively), utilizes Apache Spark (with the Astronomy eXtensions 
+              for Spark &mdash; AXS &mdash; framework) for parallel data analytics, and JupyterHub 
+              as the web-accesible front-end.
+            </p>
+            <p>
+              With this setup, we show how it is possible to transparently scale processing 
+              with no end-user interaction. We outline the architecture of the analysis 
+              platform, provide implementation details, rationale for (and against) technology 
+              choices, verify scalability through strong and weak scaling tests, and 
+              demonstrate usability through an example science analysis of data from the ZTF. 
+              The code is available at <a href=https://github.com/astronomy-commons/science-platform>
+                https://github.com/astronomy-commons/science-platform</a>. 
+              To our knowledge, this is a first application of cloud-based scalable analytics to 
+              astronomical datasets approaching LSST-scale.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="publications" class="about">
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title">
+          <h2>Talks and Publications</h2>
+        </div>
+        
+        <div class="row content">
+          <div class="col-lg-6">
+            <h3>
+              ApJ
+            </h3>
+          </div>
+          <div class="col-lg-6">
+          </div>
+        </div>
+        <div class="row content">
+          <div class="col-lg-6">
+            <p>
+              This work has been published in the Astrophysical Journal (ApJ). This publication provides more detail than the Gateways paper.
+            </p>
+            <a href="assets/pdf/paper.pdf" target="_blank" class="btn-learn-more">Read</a>            
+          </div>
+          <div class="col-lg-6">
+            <p>
+              <strong>Citation: </strong> Stetzler. S. et al. (in prep.)
+            </p>
+          </div>
+        </div>
+
+
+        <br>
+
+        <div class="row content">
+          <div class="col-lg-6">
+            <h3>
+              Gateways 2020
+            </h3>
+          </div>
+          <div class="col-lg-6">
+          </div>
+        </div>
+        <div class="row content">
+          <div class="col-lg-6">
+            <p>
+              We presented this work virtually at the <a href="https://sciencegateways.org/web/gateways2020/">Gateways 2020 Conference</a>, producing both a talk and a paper for the conference proceedings.
+            </p>
+            <a href="https://www.youtube.com/watch?v=fGQ1Kr7Z8jk&t=48s" target="_blank" class="btn-learn-more">Watch</a>
+            <a href="https://osf.io/e2zwf/" target="_blank" class="btn-learn-more">Read</a>            
+          </div>
+          <div class="col-lg-6">
+            <p>
+              <strong>Citation: </strong> Stetzler. S. et al. 2020. ”A Scalable Cloud-Based Analysis Platform for Survey Astronomy.” Paper presented at Gateways 2020, Online, USA, October 12-23, 2020. https://osf.io/e2zwf/.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="cost" class="contact">
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title">
+          <h2>Cost Calculator</h2>
+        </div>
+        <div class="row content">
+          <div class="col-12">
+            <p>
+              Here we provide a cost calculator that reproduces the variable 
+              costs in Table 2 of the main paper. You can play around with the inputs
+              to the calculator to estimate costs for setting up an identical system for
+              your own purposes.
+            </p>
+          </div>
+        </div>
+        <div class="row content">
+          <div class="col-md-6">
+            <h3>Parameters</h3>
+            <form class="php-email-form form-horizontal">
+                <strong>System</strong>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="num_users_input">Number of users:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="num_users_input" name="num_users_input" value="10" min="0">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="node_storage_input">Storage per node:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="node_storage_input" name="node_storage_input" value="200" min="0">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="cost_user_input">Cost for user nodes:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="cost_user_input" name="cost_user_input" value="0.1664" min="0">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="cost_spark_input">Cost for spark nodes:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="cost_spark_input" name="cost_spark_input" value="0.0499" min="0">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="cost_storage_input">Cost for storage:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="cost_storage_input" name="cost_storage_input" value="0.08" min="0">
+                  </div>
+                </div>
+
+                <strong>Interactive Usage</strong>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="user_hours_input">User hours:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="user_hours_input" name="user_hours_input" value="8" min="0">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="user_days_input">User days:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="user_days_input" name="user_days_input" value="5" min="0">
+                  </div>
+                </div>
+                
+                <strong>Queries</strong>
+
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="query_core_hours_input">Spark query core hours (per user per day):</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="query_core_hours_input" name="query_core_hours_input" value="128" min="0" max="1024" style="width: 100%;">
+                  </div>
+                </div>
+            </form>
+          </div>
+          <div class="col-md-6">
+            <h3>Variable Cost</h3>
+            <form class="php-email-form">
+              <div class="form-group">
+                <div class="col-sm-6">
+                  <strong>
+                    Total:
+                  </strong>
+                </div>
+                <div class="col-sm-6">
+                  <strong style="float: right;" id="cost_total">
+                  </strong>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-6 control-label" for="plot_x_axis_input">Plot axis:</label>
+                <div class="col-sm-6">
+                  <select class="form-control" id="plot_x_axis_input">
+                    <option value="num_users_input" selected>Number of Users</option>
+                    <option value="cost_user_input">Cost of User Node</option>
+                    <option value="cost_spark_input">Cost of Spark Node</option>
+                    <option value="cost_storage_input">Cost of Node Storage</option>
+                    <option value="node_storage_input">Node Storage Size</option>
+                    <option value="user_hours_input">User Hours</option>
+                    <option value="user_days_input">User Days</option>
+                    <option value="query_core_hours_input">Spark Query Hours</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                  <canvas id="chart" width="451" height="400"></canvas>
+              </div>
+              <!-- <strong>Plot Configuration</strong> -->
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="contact" class="contact">
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-title">
+
+          <h2>Contact</h2>
+        </div>
+        <div class="row content">
+          <div class="col-lg-12">
+            <p>You can reach out to the authors via email: 
+              <ul style="list-style-type:none;">
+                <li>
+                  <i class="bx bx-chevron-right"></i>
+                  <a href="mailto:stevengs@uw.edu">Steven Stetzler (stevengs@uw.edu)</a>
+                </li>
+                <li>
+                  <i class="bx bx-chevron-right"></i>
+                  <a href="mailto:stevengs@uw.edu">Mario Juric (mjuric@uw.edu)</a>
+                </li>
+              </ul>
+            </p>
+          </div>
+        </div>
+
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="footer">
+
+    <div class="container footer-bottom clearfix">
+      <div class="copyright">
+        &copy; Copyright <strong><span>Arsha</span></strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/arsha-free-bootstrap-html-template-corporate/ -->
+        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="preloader"></div>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
+
+  <!-- Cost Calculator -->
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <!-- Popper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <!-- Bootstrap -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <!-- ChartJS -->
+  <script src='https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js'></script>
+  <!-- Our JS -->
+  <script src="assets/js/cost.js"></script>
+
+</body>
+
+</html>
