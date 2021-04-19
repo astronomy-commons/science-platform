@@ -51,6 +51,18 @@ jupyterhub:
             tag: <your-image-tag>
 ```
 
+Enable HTTPS with letsencrypt:
+```
+# file: values-customize.yaml
+proxy:
+    https:
+      enabled: true
+      letsencrypt:
+        contactEmail: <your-email>
+      hosts:
+      - <your-domain-name>
+```
+
 Add AWS access keys for your AWS account with:
 ```
 # file: values-customize.yaml

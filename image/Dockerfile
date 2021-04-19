@@ -93,3 +93,9 @@ RUN conda install --quiet --yes \
     conda clean --all -f -y && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
+
+# Install nbgitpuller
+RUN python -m pip install nbgitpuller
+
+# Install nbresuse
+RUN python -m pip install nbresuse

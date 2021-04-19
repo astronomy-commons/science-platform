@@ -48,7 +48,7 @@ spark-defaults.conf:
   999-executor-defaults: |
     # options for the executor pods
     spark.executor.instances=2
-    spark.executor.memory=1350m
+    spark.executor.memory=13250m
     spark.executor.cores=4
     spark.kubernetes.executor.request.cores=3290m
     spark.kubernetes.executor.limit.cores=3290m

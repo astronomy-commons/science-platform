@@ -32,8 +32,9 @@ jupyterhub:
         import oauthenticator
         from tornado import gen
         import os, secrets
+        from z2jh import get_config
         
-        class MyGitHubAuth(oauthenticator.github.GitHubOAuthenticator):
+        class GitHubOAuthenticatorInjectUser(oauthenticator.github.GitHubOAuthenticator):
           @gen.coroutine
           def authenticate(self, handler, data=None):
             userdict = yield super().authenticate(handler, data)
@@ -41,15 +42,22 @@ jupyterhub:
 
           @gen.coroutine
           def pre_spawn_start(self, user, spawner):
-              """Pass upstream_token to spawner via environment variable"""
-              auth_state = yield user.get_auth_state()
-              if not auth_state:
-                  # auth_state not enabled
-                  return
-              spawner.environment["NB_UID"] = str(auth_state["github_user"]["id"])
-              spawner.environment["NB_USER"] = str(auth_state["github_user"]["login"])
+            """Pass upstream_token to spawner via environment variable"""
+            auth_state = yield user.get_auth_state()
+            if auth_state:
+              if auth_state.get("github_user", None):
+                spawner.environment["NB_UID"] = str(auth_state["github_user"]["id"])
+                # spawner.environment["NB_USER"] = str(auth_state["github_user"]["login"])
+                spawner.environment["NB_USER"] = str(user.name)
+                return
 
-        c.JupyterHub.authenticator_class = MyGitHubAuth
+            print("error with auth, setting NB_USER to:", user.name)
+            spawner.environment["NB_USER"] = str(user.name)
+
+        if get_config("hub.config.JupyterHub.authenticator_class") == "github":
+          print("setting authenticator_class to:", GitHubOAuthenticatorInjectUser)
+          c.JupyterHub.authenticator_class = GitHubOAuthenticatorInjectUser
+
         c.Authenticator.enable_auth_state = True
         
   singleuser:
@@ -62,6 +70,9 @@ jupyterhub:
     # credentials are mounted in the notebook pod at /var/run/secrets/kubernetes.io/serviceaccount
     # allows Spark (and the user) to access the Kubernetes cluster via the API at https://kubernetes.default.svc:443
     serviceAccountName: jupyter-spark-serviceaccount
+    # change permissions on home directory to NB_USER
+    extraEnv:
+      CHOWN_HOME: "yes"
     storage:
       type: none
       # mount the files spark-defaults.conf and spark-env.sh into the user notebook
