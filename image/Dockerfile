@@ -61,8 +61,11 @@ RUN cd $SPARK_HOME/jars && \
     axs_jar=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g') && \
     ln -s $axs_jar ./$(basename $axs_jar)
 
+# Install mamba
+RUN conda install --quiet --yes -c conda-forge mamba
+
 # Install pyarrow, numpy, pandas
-RUN conda install --quiet --yes \
+RUN mamba install --quiet --yes \
     'pyarrow' \
     'numpy' \
     'pandas' && \
@@ -71,7 +74,7 @@ RUN conda install --quiet --yes \
     fix-permissions /home/$NB_USER
 
 # Install extra packages
-RUN conda install --quiet --yes \
+RUN mamba install --quiet --yes \
     # pytables for Pandas, allows reading of hdf5 files
     'pytables' \
     # plotting
@@ -85,7 +88,7 @@ RUN conda install --quiet --yes \
     fix-permissions /home/$NB_USER
 
 # Install Jupyter Proxy Server
-RUN conda install --quiet --yes \
+RUN mamba install --quiet --yes \
     'jupyter-server-proxy' \
     -c conda-forge && \
     jupyter labextension install  \

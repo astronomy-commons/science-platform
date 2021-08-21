@@ -23,6 +23,9 @@ jupyterhub:
     enabled: true
   hub:
     allowNamedServers: true
+    db:
+      pvc:
+        storageClassName: nfs
     extraConfig:
       run_user_as_root: |
         c.KubeSpawner.uid = 0
@@ -42,7 +45,7 @@ jupyterhub:
 
           @gen.coroutine
           def pre_spawn_start(self, user, spawner):
-            """Pass upstream_token to spawner via environment variable"""
+            """Pass user name and user id to spawner via environment variable"""
             auth_state = yield user.get_auth_state()
             if auth_state:
               if auth_state.get("github_user", None):
@@ -89,15 +92,15 @@ jupyterhub:
         configMap:
           name: "before-notebook.d"
       # consume the nfs PVC that comes with the genesis helm chart
-      - name: "nfs-volume"
+      - name: "nfs-homes-volume"
         persistentVolumeClaim:
-          claimName: "nfs"
+          claimName: "nfs-homes"
       - name: "nfs-code-volume"
         persistentVolumeClaim:
           claimName: "nfs-code"
-      - name: "nfs-code-kernels-volume"
+      - name: "nfs-kernels-volume"
         persistentVolumeClaim:
-          claimName: "nfs-code-kernels"
+          claimName: "nfs-kernels"
       extraVolumeMounts:
       # mount spark configurations from configMap
       # mount spark-defaults.conf to spark-defaults.conf.static
@@ -119,15 +122,15 @@ jupyterhub:
         subPath: "executor.yaml"
       # mount the efs-backed filesystem to /nfs
       # creates a folder for the user in /nfs and /nfs contains all other users
-      - name: "nfs-volume"
+      - name: "nfs-homes-volume"
         mountPath: "/home/{username}"
         # subPath creates a folder within the efs filesystem for the user
         subPath: "{username}"
-      - name: "nfs-volume"
+      - name: "nfs-homes-volume"
         mountPath: "/home"
       - name: "nfs-code-volume"
         mountPath: "/opt/conda/envs"
-      - name: "nfs-code-kernels-volume"
+      - name: "nfs-kernels-volume"
         mountPath: "/opt/conda/share/jupyter/kernels"
       # jupyter configurations
       - name: "start-notebook-volume"
@@ -203,3 +206,13 @@ start-notebook:
     merge "$SPARK_HOME/conf/spark-env.sh"
     merge "$SPARK_HOME/conf/hive-site.xml"
     merge "$SPARK_HOME/conf/executor.yaml"
+
+nfs-pvcs:
+  nfs:
+    name: nfs
+  homes:
+    name: nfs-homes
+  code:
+    name: nfs-code
+  kernels:
+    name: nfs-kernels

@@ -23,7 +23,7 @@ Deploy the JupyterHub Helm chart on the EKS cluster:
 ```
 export NAMESPACE=hub
 export RELEASE=hub
-./script/deploy.sh
+./scripts/deploy.sh
 ```
 
 (Optional) Once the deployment is ready, intialize the Hive metastore to add our tables stored on S3:
@@ -112,6 +112,6 @@ jupyterhub:
 # Build on this Helm chart
 
 ```
-helm repo add astronomy-commons https://astronomy-commons.github.io/helm-charts/
+helm repo add science-platform https://hub.astronomycommons.org/
 helm repo update
 ```

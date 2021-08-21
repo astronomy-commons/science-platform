@@ -1,35 +1,17 @@
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: nfs
-spec:
-  storageClassName: nfs
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Mi
+
+{{- if index .Values "nfs-pvcs" -}}
+{{ range $key, $value := index .Values "nfs-pvcs" }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: nfs-code
+  name: {{ index $value "name" }}
 spec:
   storageClassName: nfs
   accessModes:
-    - ReadWriteMany
+  - ReadWriteMany
   resources:
     requests:
       storage: 1Mi
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: nfs-code-kernels
-spec:
-  storageClassName: nfs
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Mi
+{{- end -}}
+{{ end }}

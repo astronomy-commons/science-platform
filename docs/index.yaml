@@ -2,7 +2,31 @@ apiVersion: v1
 entries:
   public-hub:
   - apiVersion: v1
-    created: "2021-04-19T20:56:09.526620705Z"
+    created: "2021-08-21T22:29:53.02961151Z"
+    dependencies:
+    - name: jupyterhub
+      repository: https://jupyterhub.github.io/helm-chart/
+      version: 0.11.1
+    - name: nfs-server-provisioner
+      repository: https://charts.helm.sh/stable
+      version: 1.1.3
+    - name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.5
+    - name: cluster-autoscaler-chart
+      repository: https://kubernetes.github.io/autoscaler
+      version: 2.0.0
+    description: JupyterHub with Integration for the Astronomy Data Commons tools
+    digest: 56718a09aa8a8bc982d1a002b211afaeb1ce83a2b5b55ff6501be58d23841dac
+    maintainers:
+    - email: stevengs@uw.edu
+      name: Steven Stetzler
+    name: public-hub
+    urls:
+    - public-hub-0.2.tgz
+    version: "0.2"
+  - apiVersion: v1
+    created: "2021-08-21T22:29:53.01717344Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -25,4 +49,4 @@ entries:
     urls:
     - public-hub-0.1.tgz
     version: "0.1"
-generated: "2021-04-19T20:56:09.489459463Z"
+generated: "2021-08-21T22:29:53.003417608Z"
