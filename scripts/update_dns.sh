@@ -105,3 +105,7 @@ create_request=$(cat <<-EOF
 EOF
 )
 response=$(aws --output=json route53 change-resource-record-sets --hosted-zone-id $hosted_zone_id --change-batch "$create_request")
+
+# restart autohttps pods since their DNS queries may not have been resolved
+kubectl --namespace="$NAMESPACE" scale deployment autohttps --replicas=0
+kubectl --namespace="$NAMESPACE" scale deployment autohttps --replicas=1
