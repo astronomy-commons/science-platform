@@ -169,7 +169,7 @@ start-notebook:
     conf_file=$SPARK_HOME/conf/spark-defaults.conf.dynamic
     
     echo "" >> $conf_file
-    echo "002-spark-defaults" >> $conf_file
+    echo "# 002-spark-defaults" >> $conf_file
     echo "spark.driver.host=$(hostname -i)" >> $conf_file
     echo "spark.kubernetes.executor.container.image=${JUPYTER_IMAGE}" >> $conf_file
     echo "spark.jars=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g')" >> $conf_file

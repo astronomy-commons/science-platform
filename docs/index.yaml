@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   public-hub:
   - apiVersion: v1
-    created: "2021-08-21T22:29:53.02961151Z"
+    created: "2021-08-31T01:30:33.842279954Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -17,7 +17,7 @@ entries:
       repository: https://kubernetes.github.io/autoscaler
       version: 2.0.0
     description: JupyterHub with Integration for the Astronomy Data Commons tools
-    digest: 56718a09aa8a8bc982d1a002b211afaeb1ce83a2b5b55ff6501be58d23841dac
+    digest: 97df14a6107e61a5e17a0e112afecf4866fe33e40d66b18e899f4d823eabbeec
     maintainers:
     - email: stevengs@uw.edu
       name: Steven Stetzler
@@ -26,7 +26,7 @@ entries:
     - public-hub-0.2.tgz
     version: "0.2"
   - apiVersion: v1
-    created: "2021-08-21T22:29:53.01717344Z"
+    created: "2021-08-31T01:30:33.8285147Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -49,4 +49,4 @@ entries:
     urls:
     - public-hub-0.1.tgz
     version: "0.1"
-generated: "2021-08-21T22:29:53.003417608Z"
+generated: "2021-08-31T01:30:33.81504092Z"
