@@ -1,4 +1,4 @@
-FROM jupyterhub/k8s-singleuser-sample:0.11.1
+FROM jupyterhub/k8s-singleuser-sample:1.1.3
 
 # Add RUN statements to install packages as the $NB_USER defined in the base images.
 
@@ -11,9 +11,9 @@ FROM jupyterhub/k8s-singleuser-sample:0.11.1
 USER root
 
 # Install Java
-RUN apt-get -y update && \
-    apt-get install --no-install-recommends -y \
-    openjdk-8-jre-headless \
+RUN apt-get -y update \
+ && apt-get install --no-install-recommends -y \
+    openjdk-11-jre-headless \
     ca-certificates-java \
     git \
     curl \
@@ -23,8 +23,8 @@ RUN apt-get -y update && \
     gzip \
     zip \
     unzip \
-    bzip2 && \
-    rm -rf /var/lib/apt/lists/*
+    bzip2 \
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy start up scripts
 COPY scripts/start-spark.sh /usr/local/bin/
@@ -33,17 +33,17 @@ COPY scripts/pre-start-source.sh /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 # Install AXS
-ARG AXS_VERSION=v3.0.0-preview-scala-fix
-ENV AXS_URL=https://github.com/stevenstetzler/axs/releases/download/$AXS_VERSION/axs-distribution.tgz
+ARG AXS_VERSION=v1.1-beta3
+ENV AXS_URL=https://github.com/astronomy-commons/axs/releases/download/$AXS_VERSION/axs-$AXS_VERSION.tgz
 ENV AXS_HOME=/opt/axs
 
-RUN cd /tmp && \
-    wget -q -O axs-distribution.tar.gz $AXS_URL && \
-    mkdir $AXS_HOME && \
-    tar xf axs-distribution.tar.gz --strip 1 -C $AXS_HOME && \
-    rm axs-distribution.tar.gz && \
-    chown -R $NB_UID:$NB_GID $AXS_HOME && \
-    rm -f /home/$NB_USER/.wget-hsts
+RUN cd /tmp \
+ && wget -q -O axs-distribution.tar.gz $AXS_URL \
+ && mkdir $AXS_HOME \
+ && tar xf axs-distribution.tar.gz --strip 1 -C $AXS_HOME \
+ && rm axs-distribution.tar.gz \
+ && chown -R $NB_UID:$NB_GID $AXS_HOME \
+ && rm -f /home/$NB_USER/.wget-hsts
 # Update environment variables
 ENV SPARK_HOME $AXS_HOME
 ENV PATH $PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
@@ -51,30 +51,23 @@ ENV PATH $PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 USER $NB_UID
 
 # Install required jars for Spark
-RUN cd $SPARK_HOME/jars && \
+RUN cd $SPARK_HOME/jars \
     # access to AWS S3
-    curl -O https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar && \
-    curl -O https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar && \
+ && curl -O https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
+ && curl -O https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
     # Connector for MariaDB for Spark metastore
-    curl -O https://downloads.mariadb.com/Connectors/java/connector-java-2.6.0/mariadb-java-client-2.6.0.jar && \
-    # link the axs jar to this directory
-    axs_jar=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g') && \
-    ln -s $axs_jar ./$(basename $axs_jar)
+ && curl -O https://downloads.mariadb.com/Connectors/java/connector-java-2.7.3/mariadb-java-client-2.7.3.jar
 
 # Install mamba
 RUN conda install --quiet --yes -c conda-forge mamba
 
-# Install pyarrow, numpy, pandas
+# Install packages from main conda repository
 RUN mamba install --quiet --yes \
+    # Install AXS dependencies: pyarrow, numpy, pandas, healpy
     'pyarrow' \
     'numpy' \
-    'pandas' && \
-    conda clean --all -f -y && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
-
-# Install extra packages
-RUN mamba install --quiet --yes \
+    'pandas' \
+    'healpy' \    
     # pytables for Pandas, allows reading of hdf5 files
     'pytables' \
     # plotting
@@ -82,23 +75,26 @@ RUN mamba install --quiet --yes \
     # pulling demo notebooks
     'nbgitpuller' \
     # interacting with K8s cluster
-    'python-kubernetes' && \
-    conda clean --all -f -y && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
-
-# Install Jupyter Proxy Server
-RUN mamba install --quiet --yes \
+    'python-kubernetes'
+    
+# Install packages from conda forge
+RUN mamba install --quiet --yes -c conda-forge \
+    # server proxy extension
     'jupyter-server-proxy' \
-    -c conda-forge && \
-    jupyter labextension install  \
-    @jupyterlab/server-proxy && \
-    conda clean --all -f -y && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
+    # resource usage extension
+    'jupyter-resource-usage'
 
-# Install nbgitpuller
-RUN python -m pip install nbgitpuller
+# Install packages with pip
+RUN python -m pip install \
+    jupyterlab-topbar \
+    jupyterlab-system-monitor \
+    nbgitpuller
 
-# Install nbresuse
-RUN python -m pip install nbresuse
+# Install labextensions
+RUN jupyter labextension install \
+    jupyterlab-topbar-text
+
+# Clean Conda
+RUN conda clean --all -f -y \
+ && fix-permissions $CONDA_DIR \
+ && fix-permissions /home/$NB_USER

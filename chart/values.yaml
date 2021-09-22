@@ -14,9 +14,9 @@ mariadb:
     hive-schema.sh: |
       #!/bin/bash
       cd /tmp
-      curl -s -O https://raw.githubusercontent.com/apache/hive/release-1.2.0/metastore/scripts/upgrade/mysql/hive-txn-schema-0.13.0.mysql.sql
-      curl -s -O https://raw.githubusercontent.com/apache/hive/release-1.2.0/metastore/scripts/upgrade/mysql/hive-schema-1.2.0.mysql.sql
-      mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /tmp/hive-schema-1.2.0.mysql.sql;"
+      curl -s -O https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-txn-schema-2.3.0.mysql.sql
+      curl -s -O https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-schema-2.3.0.mysql.sql
+      mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /tmp/hive-schema-2.3.0.mysql.sql;"
 
 jupyterhub:
   rbac:
@@ -172,7 +172,7 @@ start-notebook:
     echo "# 002-spark-defaults" >> $conf_file
     echo "spark.driver.host=$(hostname -i)" >> $conf_file
     echo "spark.kubernetes.executor.container.image=${JUPYTER_IMAGE}" >> $conf_file
-    echo "spark.jars=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g')" >> $conf_file
+    # echo "spark.jars=$(ls -p $SPARK_HOME/python/axs/*jar | xargs echo | sed 's/ /,/g')" >> $conf_file
     prefix=spark.executorEnv
     if [ -n "${NB_USER}" ]; then
       echo "${prefix}.NB_USER ${NB_USER}" >> $conf_file

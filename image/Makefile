@@ -1,7 +1,7 @@
 .PHONY: help build dev test test-env
 
 # Docker image name and tag
-IMAGE:=jupyter-axs
+IMAGE:=astronomycommons/public-hub-singleuser
 TAG?=latest
 # Shell that make should use
 SHELL:=bash
