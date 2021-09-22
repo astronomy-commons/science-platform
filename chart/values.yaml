@@ -23,9 +23,9 @@ jupyterhub:
     enabled: true
   hub:
     allowNamedServers: true
-    db:
-      pvc:
-        storageClassName: nfs
+    # db:
+    #   pvc:
+    #     storageClassName: nfs
     extraConfig:
       run_user_as_root: |
         c.KubeSpawner.uid = 0
