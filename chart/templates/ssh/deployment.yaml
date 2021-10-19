@@ -1,0 +1,36 @@
+{{- if .Values.ssh.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh
+  labels:
+    component: ssh-server
+    app: jupyterhub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: ssh-server
+  template:
+    metadata:
+      labels:
+        component: ssh-server
+    spec:
+      containers:
+      - name: ssh
+        image: {{ .Values.ssh.image.name }}:{{ .Values.ssh.image.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 22
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512M
+        volumeMounts:
+        - mountPath: /home
+          name: nfs-homes
+      volumes:
+      - name: nfs-homes
+        persistentVolumeClaim:
+          claimName: nfs
+{{- end -}}

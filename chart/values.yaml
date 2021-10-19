@@ -3,6 +3,14 @@ nfs-server-provisioner:
     enabled: true
     size: 10Gi
 
+ssh:
+  enabled: false
+  image:
+    name: astronomycommons/jupyterhub-ssh
+    tag: deploy
+  # consistent with rest of the JupyterHub
+  admin_users:
+
 mariadb:
   auth:
     rootPassword: root
@@ -27,6 +35,31 @@ jupyterhub:
     #   pvc:
     #     storageClassName: nfs
     extraConfig:
+      ssh_config: |
+        from z2jh import get_config
+        if get_config("ssh.enabled"):
+          def modify_pod_hook(spawner, pod):
+            pod.spec.subdomain = "notebooks"
+            pod.spec.hostname = spawner._expand_user_properties("jupyter-{username}--{servername}")
+            return pod
+
+          c.KubeSpawner.modify_pod_hook = modify_pod_hook
+
+          c.KubeSpawner.extra_container_config = {
+            'ports': [
+              {
+                'containerPort': 8888,
+                'name': 'notebook-port',
+                'protocol': 'TCP'
+              },
+              {
+                'containerPort': 22, 
+                'name': 'ssh-port', 
+                'protocol': 'TCP'
+              }
+            ]
+          }
+
       run_user_as_root: |
         c.KubeSpawner.uid = 0
         c.Spawner.args.append("--allow-root")
@@ -49,8 +82,9 @@ jupyterhub:
             auth_state = yield user.get_auth_state()
             if auth_state:
               if auth_state.get("github_user", None):
+                # get GitHub user id
                 spawner.environment["NB_UID"] = str(auth_state["github_user"]["id"])
-                # spawner.environment["NB_USER"] = str(auth_state["github_user"]["login"])
+                # pass JupyterHub username as NB_USER 
                 spawner.environment["NB_USER"] = str(user.name)
                 return
 
@@ -206,6 +240,39 @@ start-notebook:
     merge "$SPARK_HOME/conf/spark-env.sh"
     merge "$SPARK_HOME/conf/hive-site.xml"
     merge "$SPARK_HOME/conf/executor.yaml"
+
+before-notebook:
+  ssh-setup.sh: |
+    # load ssh config from NFS
+    server_config_dir="/home/admin/ssh/users/$NB_USER"
+    if [ ! -d $server_config_dir ]
+    then
+        # Back up host keys and config to NFS
+        mkdir -p $server_config_dir
+        cp -r /etc/ssh/* $server_config_dir/.
+    fi
+    # remove host keys and config from container
+    rm -rf /etc/ssh
+    # link to host keys and config on NFS
+    ln -s $server_config_dir /etc/ssh
+
+    # (re)generate missing host keys
+    ssh-keygen -A
+
+    # Set-up public/private keys for user
+    if test -f "/home/$NB_USER/.ssh/id_rsa"; then
+      echo "ssh key-pair already exists"
+    else
+      echo "creating ssh key-pair"
+      ssh-keygen -t rsa -q -f "/home/$NB_USER/.ssh/id_rsa" -N "" || echo "could not create ssh key pair!"
+      cat /home/$NB_USER/.ssh/id_rsa.pub >> /home/$NB_USER/.ssh/authorized_keys
+    fi
+
+    # restrict logins to only the notebook user
+    echo "AllowUsers $NB_USER" >> /etc/ssh/sshd_config
+
+    # start the SSH service
+    service ssh start
 
 nfs-pvcs:
   nfs:

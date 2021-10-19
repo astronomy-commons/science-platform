@@ -1,0 +1,28 @@
+{{- if .Values.ssh.enabled -}}
+# DNS resolution for user pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: notebooks
+spec:
+  selector:
+    app: jupyterhub
+    component: singleuser-server
+  clusterIP: None
+  ports: []
+---
+# External IP for SSH server host
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh
+spec:
+  selector:
+    app: jupyterhub
+    component: ssh-server
+  ports:
+  - protocol: TCP
+    port: 22
+    targetPort: 22
+  type: LoadBalancer
+{{- end -}}
