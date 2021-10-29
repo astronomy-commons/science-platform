@@ -1,10 +1,10 @@
-# axs-notebook
+# SSH Jump Host
 
-Create a Docker image for the singleuser server based. Integrates Jupyter notebooks with AXS/Spark.
+Create a Docker image for the SSH Jump host.
 
 Build and deploy to your own repository:
 ```
-make build # builds image jupyter-axs:latest
-docker tag jupyter-axs:latest <repo>/<image>:<tag>
+make build # builds image astronomycommons/jupyterhub-ssh:latest
+docker tag astronomycommons/jupyterhub-ssh:latest <repo>/<image>:<tag>
 docker push <repo>/<image>:<tag>
 ```
