@@ -32,8 +32,18 @@ function ssh_setup {
     rm -rf /etc/ssh
     # link to host keys and config on NFS
     ln -s $server_config_dir /etc/ssh
+    
+    # add config specified via Helm chart
+    if [ -d /etc/_ssh ]; then
+        cat /etc/_ssh/ssh_config.d/chart.conf
+        cp /etc/_ssh/ssh_config.d/chart.conf /etc/ssh/ssh_config.d/.
+        cat /etc/_ssh/sshd_config.d/chart.conf
+        cp /etc/_ssh/sshd_config.d/chart.conf /etc/ssh/sshd_config.d/.
+    fi
     # (re)generate missing host keys
     ssh-keygen -A
+    # Add /run/sshd
+    mkdir -p /run/sshd
 }
 
 if test "$#" -ne 0; then
@@ -46,6 +56,9 @@ else
     ssh_setup
     sleep 2
     echo "Starting SSH service"
+    # $(which sshd) -ddd -D -p 22
+    echo "Using configuration:"
+    sshd -T
     service ssh start
     sleep infinity
 fi

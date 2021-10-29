@@ -13,4 +13,4 @@ RUN apt-get install --no-install-recommends -y \
 RUN rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /usr/local/sbin
-ENTRYPOINT ["/usr/local/sbin/entrypoint.sh"]
+ENTRYPOINT ["tini", "-g", "/usr/local/sbin/entrypoint.sh"]

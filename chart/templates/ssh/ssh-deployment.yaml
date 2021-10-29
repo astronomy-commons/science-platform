@@ -4,18 +4,21 @@ kind: Deployment
 metadata:
   name: ssh
   labels:
-    component: ssh-server
     app: jupyterhub
+    component: ssh-server
 spec:
   replicas: 1
   selector:
     matchLabels:
+      app: jupyterhub
       component: ssh-server
   template:
     metadata:
       labels:
+        app: jupyterhub
         component: ssh-server
     spec:
+      hostname: {{ .Values.ssh.hostname }}
       containers:
       - name: ssh
         image: {{ .Values.ssh.image.name }}:{{ .Values.ssh.image.tag }}
@@ -28,9 +31,18 @@ spec:
             memory: 512M
         volumeMounts:
         - mountPath: /home
-          name: nfs-homes
+          name: nfs-homes-volume
+        - mountPath: /etc/_ssh/sshd_config.d/chart.conf
+          subPath: sshd_config_jump
+          name: ssh-config-volume
+        - mountPath: /etc/_ssh/ssh_config.d/chart.conf
+          subPath: ssh_config_jump
+          name: ssh-config-volume
       volumes:
-      - name: nfs-homes
+      - name: nfs-homes-volume
         persistentVolumeClaim:
-          claimName: nfs
+          claimName: nfs-homes
+      - name: ssh-config-volume
+        configMap:
+          name: ssh-config-map
 {{- end -}}

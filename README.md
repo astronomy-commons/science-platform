@@ -109,6 +109,30 @@ jupyterhub:
         - read:org
 ```
 
+# Admin users
+
+# SSH
+
+By default, a SSH "jump host" is deployed with this chart to allow users to use `scp` and `sftp` to copy files to the NFS. In addition, each notebook server starts its own SSH service, allowing users to access their notebook servers using `ssh` via the jump host.
+
+If a user wants to utilize this, they should perform the following steps:
+1. Launch their notebook server.
+2. Start a terminal and open the file `~/.ssh/authorized_keys` with a text editor.
+3. Add your public key as a new line in this file.
+4. Edit the file `~/.ssh/config` on your local machine to include the following:
+```
+Host jhub-ssh
+    User <username>
+    Hostname <ssh-hostname>
+
+Host jhub
+    User <username>
+    Hostname <host-prefix>-<username>.notebooks
+    ProxyJump jhub-ssh
+```
+Administrators should set and provide to you the values for `<ssh-hostname>` (e.g. `ssh.demo.dirac.dev`) and the `<host-prefx>` (e.g. `jupyter` or `demo`). `<username>` should be set to your username on the JupyterHub.
+5. On your local machine, ssh to your running notebook server: `ssh jhub`. 
+
 # Build on this Helm chart
 
 ```

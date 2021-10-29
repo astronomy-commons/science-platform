@@ -16,7 +16,7 @@ metadata:
 # creates a role that specifies a set of resources a service account bound to this
 # role can access
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   # name of the role
   name: jupyter-spark-role
@@ -44,7 +44,7 @@ rules:
 ---
 # defines to which service accounts the above roles are assigned
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: jupyter-spark-rolebinding
   namespace: {{ .Release.Namespace }}

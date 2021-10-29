@@ -2,3 +2,6 @@ _site
 __pycache__
 
 values-customize.yaml
+cluster/load_balancer
+cluster/ebs_driver
+cluster/*.json
