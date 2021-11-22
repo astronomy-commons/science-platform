@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: admin-sync
+  template:
+    metadata:
+      labels:
+        component: admin-sync
+    spec:
+      containers:
+      - name: admin-sync
+        image: {{ .Values.admin.image.name }}:{{ .Values.admin.image.tag }}
+        imagePullPolicy: {{ .Values.admin.image.pullPolicy }}
+        env:
+        - name: JUPYTERHUB_API_TOKEN
+          value: {{ .Values.admin.token }}
+        volumeMounts:
+        - name: "nfs-homes-volume"
+          mountPath: "/home"
+      volumes:  
+      - name: "nfs-homes-volume"
+        persistentVolumeClaim:
+          claimName: nfs-homes

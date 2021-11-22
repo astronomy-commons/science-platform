@@ -27,7 +27,8 @@ RUN apt-get install --no-install-recommends -y \
     gzip \
     zip \
     unzip \
-    bzip2
+    bzip2 \
+    less
 
 # Install ssh and htop
 RUN apt-get install -y --fix-missing \
@@ -56,12 +57,6 @@ RUN apt-get -y install \
 RUN apt-get -y clean \
  && rm -rf /var/lib/apt/lists/*
 
-# Copy start up scripts
-COPY scripts/start-spark.sh /usr/local/bin/
-COPY scripts/entrypoint.sh /usr/local/bin/
-COPY scripts/pre-start-source.sh /usr/local/bin/
-ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
-
 # Add admin user and group
 RUN groupadd -g 996 admin \
  && useradd --system admin -u 999 -g 996 -m \
@@ -69,30 +64,25 @@ RUN groupadd -g 996 admin \
  && echo "#includedir /home/admin/etc/sudoers.d" >> /etc/sudoers
 
 # Install AXS
-ARG AXS_VERSION=v1.1-beta3
-ENV AXS_URL=https://github.com/astronomy-commons/axs/releases/download/$AXS_VERSION/axs-$AXS_VERSION.tgz
-ENV AXS_HOME=/opt/axs
-
-RUN cd /tmp \
- && wget -q -O axs-distribution.tar.gz $AXS_URL \
- && mkdir $AXS_HOME \
- && tar xf axs-distribution.tar.gz --strip 1 -C $AXS_HOME \
- && rm axs-distribution.tar.gz \
- && chown -R $NB_UID:$NB_GID $AXS_HOME \
- && rm -f /home/$NB_USER/.wget-hsts
+ENV AXS_VERSION v1.1-beta3
 # Update environment variables
-ENV SPARK_HOME $AXS_HOME
+ENV SPARK_HOME /opt/axs
 ENV PATH $PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
-
-USER $NB_USER
-
-# Install required jars for Spark
-RUN cd $SPARK_HOME/jars \
-    # access to AWS S3
+RUN cd /tmp \
+ # Download AXS
+ && wget -q -O axs-distribution.tar.gz https://github.com/astronomy-commons/axs/releases/download/${AXS_VERSION}/axs-${AXS_VERSION}.tgz \
+ && mkdir $SPARK_HOME \
+ && tar xf axs-distribution.tar.gz --strip 1 -C $SPARK_HOME \
+ && rm axs-distribution.tar.gz \
+ # Install required jars for Spark
+ && cd $SPARK_HOME/jars \
+ # access to AWS S3
  && curl -O -s https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
  && curl -O -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
-    # Connector for MariaDB for Spark metastore
+ # Connector for MariaDB for Spark metastore
  && curl -O -s https://downloads.mariadb.com/Connectors/java/connector-java-2.7.3/mariadb-java-client-2.7.3.jar
+
+USER $NB_USER
 
 # Install mamba
 RUN conda install --quiet --yes -c conda-forge mamba
@@ -111,7 +101,9 @@ RUN mamba install --quiet --yes \
     # pulling demo notebooks
     'nbgitpuller' \
     # interacting with K8s cluster
-    'python-kubernetes'
+    'python-kubernetes' \
+    # Dask
+    'dask'
     
 # Install packages from conda forge
 RUN mamba install --quiet --yes -c conda-forge \
@@ -128,7 +120,8 @@ RUN mamba install -c manics websockify \
 RUN python -m pip install \
     jupyterlab-topbar \
     jupyterlab-system-monitor \
-    nbgitpuller
+    nbgitpuller \
+    dask_kubernetes
 
 # Install labextensions
 RUN jupyter labextension install \
@@ -137,13 +130,21 @@ RUN jupyter labextension install \
 # Clean Conda
 RUN conda clean --all -f -y
 
-# Fix permissions on conda directory and user directory
 USER root
-# have conda install owned by admin user
+# Clean up
+RUN rm -rf /home/admin/* /home/jovyan/*
+
+# Update conda permissions
 RUN chown -R admin:admin $CONDA_DIR \
-    # ensure contents of user home directory are owned by the user
- && chown -R $NB_UID:$NB_GID /home/$NB_USER
+ # Update software permissions
+ && chown -R admin:admin $SPARK_HOME
 
-RUN rm -rf /home/$NB_USER/.cache /home/$NB_USER/.npm /home/$NB_USER/.yarn
+# Copy start up scripts
+COPY scripts/entrypoint.sh /usr/local/bin/
+COPY scripts/pre-start-source.sh /usr/local/bin/
+COPY scripts/start-spark.sh /usr/local/bin/
+COPY scripts/start-ssh.sh /usr/local/bin/
+ENTRYPOINT [ "tini", "-g", "--", "/usr/local/bin/entrypoint.sh" ]
 
+# Switch to user
 USER $NB_USER

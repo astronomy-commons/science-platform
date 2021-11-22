@@ -45,11 +45,72 @@ jupyterhub:
   rbac:
     enabled: true
   hub:
+    services:
+    - name: "admin-sync"
+      admin: true
+      api_token: 
+    containerSecurityContext:
+      runAsUser: 0
+      runAsGroup: 0
+    extraVolumes:
+    - name: "nfs-homes-volume"
+      persistentVolumeClaim:
+        claimName: "nfs-homes"
+    - name: "admin-sync-token"
+      secret:
+        name: "admin-sync-token-config-map"
+    extraVolumeMounts:
+    - name: "nfs-homes-volume"
+      mountPath: "/home"
+    - name: "admin-sync-token"
+      mountPath: "/var/run/secrets/jupyterhub-admin-sync"
     allowNamedServers: true
     # db:
     #   pvc:
     #     storageClassName: nfs
     extraConfig:
+      000-admin-sync-service: |
+        import os
+        token = os.environ.get("ADMIN_SYNC_TOKEN", None)
+        if not token:
+          print("JupyterHub Admin Sync token is not available. Set ADMIN_SYNC_TOKEN environment variable.")
+        else:
+          print("Adding Admin Sync service")
+          service = {
+            "name": "admin-sync",
+            "admin": True,
+            "api_token": token,
+          }
+          if len(c.JupyterHub.services) == 0:
+            c.JupyterHub.services = [service]
+          else:
+            c.JupyterHub.services.extend([service])
+
+      000-admin-setup: |
+        import os
+        if not os.path.exists("/home/admin/etc/sudoers.d"):
+          os.makedirs("/home/admin/etc/sudoers.d")
+        
+        os.chown("/home/admin", 999, 996)
+        os.chown("/home/admin/etc", 999, 996)
+
+        admin_users = list(c.Authenticator.admin_users)
+        if len(admin_users) != 0:
+          admin_users = ["admin"] + admin_users
+        else:
+          admin_users = ["admin"]
+        
+        if admin_users:
+          with open(f"/home/admin/etc/sudoers.d/01-define-admins", "w") as _file:
+            admins_str = ", ".join(admin_users)
+            _file.write(f"User_Alias ADMINS = {admins_str}\n")
+          
+          with open(f"/home/admin/etc/sudoers.d/02-admins-can-run-as-admin", "w") as _file:
+            _file.write("ADMINS  ALL=(admin)     NOPASSWD: ALL\n")
+          
+          with open(f"/home/admin/etc/sudoers.d/03-admins-can-run-as-root", "w") as _file:
+            _file.write("ADMINS  ALL=(root)     NOPASSWD: ALL\n")
+        
       ssh_config: |
         from z2jh import get_config
         if get_config("custom.host_tag"):

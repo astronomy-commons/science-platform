@@ -1,7 +1,7 @@
 .PHONY: help build dev test test-env
 
 # Docker image name and tag
-IMAGE:=astronomycommons/jupyterhub-ssh
+IMAGE:=astronomycommons/jupyterhub-base
 TAG?=latest
 # Shell that make should use
 SHELL:=bash
@@ -12,7 +12,6 @@ help:
 
 build: DARGS?=
 build: ## Make the latest build of the image
-	cp ../common.sh common.sh
 	docker build $(DARGS) --rm --force-rm -t $(IMAGE):$(TAG) .
 
 dev: ARGS?=
