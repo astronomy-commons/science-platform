@@ -12,7 +12,7 @@ var ranges = {
     'node_storage': [0, 1024],
     'user_hours': [0, 24],
     'user_days': [0, 7],
-    'query_core_hours': [0, 1024]
+    'query_core_hours': [0, 4000]
 }
 
 var labels = {
@@ -24,7 +24,7 @@ var labels = {
     'node_storage': "Node Storage Size (GB)",
     'user_hours': "User Hours (hours/day)",
     'user_days': "User Days (days/week)",
-    'query_core_hours': "Spark Query Core Hours (core-hours/day/user)"
+    'query_core_hours': "Spark Query Core Hours (core-hours/user/month)"
 }
 
 // From: https://stackoverflow.com/questions/40475155/does-javascript-have-a-method-that-returns-an-array-of-numbers-based-on-start-s
@@ -57,7 +57,7 @@ function cost(params) {
     var storage_total = (
         // users
         num_users * (
-            // each user each day
+            // each user each month
             node_storage * cost_storage_per_hour * (
                 user_hours *  30 * (user_days / 7) + spark_node_hours
             )
@@ -68,10 +68,10 @@ function cost(params) {
     var vm_total = (
         // users
         num_users * (
-            // each user each day
+            // each user each month
             (cost_user * user_hours * 30 * (user_days / 7))
             +
-            // Spark queries for each user each day
+            // Spark queries for each user each month
             (cost_spark * spark_node_hours)
         ) 
     );
