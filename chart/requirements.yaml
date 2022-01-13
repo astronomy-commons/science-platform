@@ -12,6 +12,3 @@ dependencies:
 - name: cluster-autoscaler-chart
   version: "2.0.0"
   repository: "https://kubernetes.github.io/autoscaler"
-- name: jupyterhub-ssh
-  version: "0.0.1-n142.h402a3d6"
-  repository: "https://yuvipanda.github.io/jupyterhub-ssh"
