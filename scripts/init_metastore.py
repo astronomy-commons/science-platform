@@ -27,3 +27,9 @@ for table_name, bucket_path in table_name_to_bucket_path.items():
             zone_height=axs.Constants.ONE_AMIN,
             import_into_spark=True
         )
+
+        table = catalog.load(table_name)
+        try:
+            table.head(1)
+        except Exception as e:
+            print(f"Exception getting data from table {table_name} at path {bucket_path}: {e}")
