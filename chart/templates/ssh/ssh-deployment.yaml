@@ -38,6 +38,10 @@ spec:
         - mountPath: /etc/_ssh/ssh_config.d/chart.conf
           subPath: ssh_config_jump
           name: ssh-config-volume
+        - mountPath: /usr/local/bin/pre_ssh_start.d
+          name: ssh-pre-start-config-volume
+        - mountPath: /usr/local/bin/post_ssh_start.d
+          name: ssh-post-start-config-volume
       volumes:
       - name: nfs-homes-volume
         persistentVolumeClaim:
@@ -45,4 +49,10 @@ spec:
       - name: ssh-config-volume
         configMap:
           name: ssh-config-map
+      - name: ssh-pre-start-config-volume
+        configMap:
+          name: ssh-pre-start-config-map
+      - name: ssh-post-start-config-volume
+        configMap:
+          name: ssh-post-start-config-map
 {{- end -}}

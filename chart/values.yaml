@@ -7,7 +7,7 @@ ssh:
   enabled: true
   image:
     name: astronomycommons/jupyterhub-ssh
-    tag: 0.0.4
+    tag: 0.0.6
   hostname: ssh
   config:
     jump:
@@ -21,8 +21,16 @@ ssh:
         PasswordAuthentication: "no"
         ClientAliveInterval: 15
 
-  # consistent with rest of the JupyterHub
-  admin_users:
+  pre_ssh_start:
+    # 000-copy-config.sh: |
+    #   cp -r /etc/_ssh/* /etc/ssh/.
+  
+  post_ssh_start:
+    # TODO: Update to remove reference to /home/admin
+    #       may require update to Dockerfile
+    # Require ssh_config.d and sshd_config.d to be copied over to NFS volume
+    # 000-copy-config.sh: |
+    #   cp -r /etc/_ssh/* /home/admin/ssh/server/.
 
 mariadb:
   auth:
@@ -45,10 +53,6 @@ jupyterhub:
   rbac:
     enabled: true
   hub:
-    services:
-    - name: "admin-sync"
-      admin: true
-      api_token: 
     containerSecurityContext:
       runAsUser: 0
       runAsGroup: 0
@@ -56,36 +60,15 @@ jupyterhub:
     - name: "nfs-homes-volume"
       persistentVolumeClaim:
         claimName: "nfs-homes"
-    - name: "admin-sync-token"
-      secret:
-        name: "admin-sync-token-config-map"
     extraVolumeMounts:
     - name: "nfs-homes-volume"
       mountPath: "/home"
-    - name: "admin-sync-token"
-      mountPath: "/var/run/secrets/jupyterhub-admin-sync"
     allowNamedServers: true
     # db:
     #   pvc:
     #     storageClassName: nfs
     extraConfig:
-      000-admin-sync-service: |
-        import os
-        token = os.environ.get("ADMIN_SYNC_TOKEN", None)
-        if not token:
-          print("JupyterHub Admin Sync token is not available. Set ADMIN_SYNC_TOKEN environment variable.")
-        else:
-          print("Adding Admin Sync service")
-          service = {
-            "name": "admin-sync",
-            "admin": True,
-            "api_token": token,
-          }
-          if len(c.JupyterHub.services) == 0:
-            c.JupyterHub.services = [service]
-          else:
-            c.JupyterHub.services.extend([service])
-
+      # Create admin users
       000-admin-setup: |
         import os
         if not os.path.exists("/home/admin/etc/sudoers.d"):
@@ -339,6 +322,12 @@ before-notebook:
     server_config_dir="/home/admin/ssh/users/$NB_USER"
     user_ssh_dir="/home/$NB_USER/.ssh"
     sudo -u $NB_USER mkdir -p ${user_ssh_dir}
+
+    # generate new host keys
+    rm -rf /etc/ssh/*key*
+    ssh-keygen -A
+
+    # Create server config directory and copy over keys, if these don't exist
     if [ ! -d ${server_config_dir} ]
     then
       echo "${server_config_dir} does not exist. Creating it and copying over contents of /etc/ssh/"
@@ -346,13 +335,10 @@ before-notebook:
       mkdir -p ${server_config_dir}
       cp -r /etc/ssh/* ${server_config_dir}/.
     fi
-    # remove host keys and config from container
-    rm -rf /etc/ssh
+    
     # link to host keys and config on NFS
+    rm -rf /etc/ssh
     ln -s ${server_config_dir} /etc/ssh
-
-    # (re)generate missing host keys
-    ssh-keygen -A
 
     # Set-up public/private keys for user
     if test -f "${user_ssh_dir}/id_rsa"; then

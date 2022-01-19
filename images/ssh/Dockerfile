@@ -10,12 +10,17 @@ RUN apt-get install --no-install-recommends -y \
     jq \
     curl \
     dnsutils
-RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/* \
+ && rm -rf /etc/ssh/*key*
+
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
 
 # Expose SSH port
 EXPOSE 22
 # Run as root
 USER root
-COPY common.sh /usr/local/bin/common.sh
 COPY start-ssh.sh /usr/local/bin/start-ssh.sh
-ENTRYPOINT ["tini", "-g", "--", "start-ssh.sh"]
+ENTRYPOINT ["/tini", "-g", "--"]
+CMD ["start-ssh.sh"]

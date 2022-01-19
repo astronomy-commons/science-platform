@@ -38,7 +38,12 @@ done
 
 hosted_zone_id=$(aws --output=json route53 list-hosted-zones | jq -r --arg DOMAIN "${DOMAIN}." ' .HostedZones | .[] | select(.Name==$DOMAIN) | .Id ')
 
-resources=$(aws --output=json route53 list-resource-record-sets --hosted-zone-id $hosted_zone_id)
+if [ ${hosted_zone_id} ]; then
+	resources=$(aws --output=json route53 list-resource-record-sets --hosted-zone-id $hosted_zone_id)
+else
+	echo "No AWS hosted zone found for domain ${DOMAIN}"
+	exit -1
+fi
 record=$(echo "$resources" | jq --arg  HUB_FQDN "${HUB_FQDN}." ' .ResourceRecordSets | .[] | select(.Name==$HUB_FQDN and .Type=="A") ')
 
 alias_hosted_zone_id=$(echo "$record" | jq ' .AliasTarget.HostedZoneId ')
