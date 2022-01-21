@@ -222,6 +222,9 @@ jupyterhub:
       - name: "spark-config-volume"
         mountPath: "/opt/axs/conf/executor.yaml.static"
         subPath: "executor.yaml"
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/log4j.properties"
+        subPath: "log4j.properties"
       # mount NFS
       # creates a folder for the user in /home and /home contains all other users
       - name: "nfs-homes-volume"
