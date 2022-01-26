@@ -165,7 +165,7 @@ jupyterhub:
   singleuser:
     image: 
       name: astronomycommons/public-hub-singleuser
-      tag: 0.5.0
+      tag: 0.6.1
       pullPolicy: Always
     # assigns the notebook pod the service account called jupyter-spark-serviceaccount in the k8s cluster
     # this service account is created if rbac.enabled is set to true in this Helm chart
