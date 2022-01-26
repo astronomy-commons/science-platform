@@ -146,7 +146,7 @@
         <div class="row content">
           <div class="col-lg-6">
             <p>
-              This work has been published in the Astrophysical Journal (ApJ). This publication provides more detail than the Gateways paper.
+              This work will be published in the Astrophysical Journal (ApJ). This publication provides more detail than the Gateways paper and provides an astronomer-ready overview of the technical details of the system.
             </p>
             <a href="assets/pdf/paper.pdf" target="_blank" class="btn-learn-more">Read</a>            
           </div>
@@ -207,13 +207,44 @@
           <div class="col-md-6">
             <h3>Parameters</h3>
             <form class="php-email-form form-horizontal">
-                <strong>System</strong>
                 <div class="form-group">
                   <label class="col-sm-6 control-label" for="num_users_input">Number of users:</label>
                   <div class="col-sm-6">
                     <input type="number" class="form-control" id="num_users_input" name="num_users_input" value="10" min="0">
                   </div>
                 </div>
+
+                <strong>Interactive Usage</strong>
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="user_hours_input">User hours:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="user_hours_input" name="user_hours_input" value="4" min="0">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="user_days_input">User days:</label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="user_days_input" name="user_days_input" value="3" min="0">
+                  </div>
+                </div>
+                
+                <strong>Queries</strong>
+
+                <div class="form-group">
+                  <label class="col-sm-6 control-label" for="query_core_hours_input">
+                    Spark query core hours (per user per month):
+                    <!-- <div style="font-size: x-small;">
+                      The number of core hours each user will utilize in a month.
+                    </div>     -->
+                  </label>
+                  <div class="col-sm-6">
+                    <input type="number" class="form-control" id="query_core_hours_input" name="query_core_hours_input" value="512" min="0" style="width: 100%;">
+                  </div>
+                </div>
+
+
+                <strong>System</strong>
                 <div class="form-group">
                   <label class="col-sm-6 control-label" for="node_storage_input">Storage per node:</label>
                   <div class="col-sm-6">
@@ -239,29 +270,6 @@
                   </div>
                 </div>
 
-                <strong>Interactive Usage</strong>
-                <div class="form-group">
-                  <label class="col-sm-6 control-label" for="user_hours_input">User hours:</label>
-                  <div class="col-sm-6">
-                    <input type="number" class="form-control" id="user_hours_input" name="user_hours_input" value="8" min="0">
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="col-sm-6 control-label" for="user_days_input">User days:</label>
-                  <div class="col-sm-6">
-                    <input type="number" class="form-control" id="user_days_input" name="user_days_input" value="5" min="0">
-                  </div>
-                </div>
-                
-                <strong>Queries</strong>
-
-                <div class="form-group">
-                  <label class="col-sm-6 control-label" for="query_core_hours_input">Spark query core hours (per user per day):</label>
-                  <div class="col-sm-6">
-                    <input type="number" class="form-control" id="query_core_hours_input" name="query_core_hours_input" value="128" min="0" max="1024" style="width: 100%;">
-                  </div>
-                </div>
             </form>
           </div>
           <div class="col-md-6">
