@@ -57,11 +57,24 @@ RUN apt-get -y install \
 RUN apt-get -y clean \
  && rm -rf /var/lib/apt/lists/*
 
+# remove SSH keys
+RUN rm -rf /etc/ssh/*key*
+
 # Add admin user and group
 RUN groupadd -g 996 admin \
- && useradd --system admin -u 999 -g 996 -m \
+ && useradd admin -u 999 -g 996 -m \
+ && chsh admin -s /bin/bash \
  # get sudoers config from file on NFS
  && echo "#includedir /home/admin/etc/sudoers.d" >> /etc/sudoers
+
+
+# Update conda permissions
+RUN chown -R admin:admin /opt
+
+# switch to admin for further installs
+USER admin
+WORKDIR /home/admin
+ENV HOME /home/admin
 
 # Install AXS
 ENV AXS_VERSION v1.1-beta3
@@ -81,8 +94,6 @@ RUN cd /tmp \
  && curl -O -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
  # Connector for MariaDB for Spark metastore
  && curl -O -s https://downloads.mariadb.com/Connectors/java/connector-java-2.7.3/mariadb-java-client-2.7.3.jar
-
-USER $NB_USER
 
 # Install mamba
 RUN conda install --quiet --yes -c conda-forge mamba
@@ -134,11 +145,6 @@ USER root
 # Clean up
 RUN rm -rf /home/admin/* /home/jovyan/*
 
-# Update conda permissions
-RUN chown -R admin:admin $CONDA_DIR \
- # Update software permissions
- && chown -R admin:admin $SPARK_HOME
-
 # Copy start up scripts
 COPY scripts/entrypoint.sh /usr/local/bin/
 COPY scripts/pre-start-source.sh /usr/local/bin/
@@ -148,3 +154,5 @@ ENTRYPOINT [ "tini", "-g", "--", "/usr/local/bin/entrypoint.sh" ]
 
 # Switch to user
 USER $NB_USER
+WORKDIR /home/$NB_USER
+ENV HOME /home/$NB_USER
