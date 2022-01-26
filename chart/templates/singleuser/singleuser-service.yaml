@@ -1,0 +1,11 @@
+# DNS resolution for user pods
+apiVersion: v1
+kind: Service
+metadata:
+  name: notebooks
+spec:
+  selector:
+    app: jupyterhub
+    component: singleuser-server
+  clusterIP: None
+  ports: []

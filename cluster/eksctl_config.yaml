@@ -38,9 +38,9 @@ managedNodeGroups:
     instanceType: t3.xlarge
     spot: true
     availabilityZones: ["us-west-2d"]
-    minSize: 1
+    minSize: 0
     maxSize: 128
-    desiredCapacity: 1
+    desiredCapacity: 0
     volumeSize: 20
     iam:
       withAddonPolicies:

@@ -14,8 +14,9 @@ table_name_to_bucket_path = {
     "ztf": "s3a://axscatalog/ztf_dr3_public",
     "allwise": "s3a://axscatalog/allwise",
     "gaiadr2": "s3a://axscatalog/gaiadr2",
+    "gaia_source_edr3": "s3a://axscatalog/gaia_source_edr3",
     "ps1": "s3a://axscatalog/ps1",
-    "sdss": "s3a://axscatalog/sdss"
+    "sdss": "s3a://axscatalog/sdss",
 }
 
 for table_name, bucket_path in table_name_to_bucket_path.items():
@@ -27,3 +28,9 @@ for table_name, bucket_path in table_name_to_bucket_path.items():
             zone_height=axs.Constants.ONE_AMIN,
             import_into_spark=True
         )
+
+        table = catalog.load(table_name)
+        try:
+            table.head(1)
+        except Exception as e:
+            print(f"Exception getting data from table {table_name} at path {bucket_path}: {e}")

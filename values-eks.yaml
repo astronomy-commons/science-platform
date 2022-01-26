@@ -1,3 +1,6 @@
+ssh:
+  aws: true
+
 jupyterhub:
   singleuser:
     nodeSelector:

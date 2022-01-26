@@ -109,6 +109,47 @@ jupyterhub:
         - read:org
 ```
 
+# Admin users
+
+# SSH
+
+By default, a SSH "jump host" is deployed with this chart to allow users to use `scp` and `sftp` to copy files to the NFS. In addition, each notebook server starts its own SSH service, allowing users to access their notebook servers using `ssh` via the jump host.
+
+If a user wants to utilize this, they should perform the following steps:
+1. Launch their notebook server.
+2. Start a terminal and open the file `~/.ssh/authorized_keys` with a text editor.
+3. On their local machine, generate a new or reuse an old SSH public key. Add their public key as a new line in the file from (2).
+4. Edit the file `~/.ssh/config` on their local machine to include the following:
+```
+Host jhub-ssh
+    User <username>
+    Hostname <ssh-hostname>
+
+Host jhub
+    User <username>
+    Hostname <host-prefix>-<username>.notebooks
+    ProxyJump jhub-ssh
+```
+Administrators should set and provide to you the values for `<ssh-hostname>` (e.g. `ssh.demo.dirac.dev`) and the `<host-prefx>` (e.g. `jupyter` or `demo`). `<username>` should be set to your username on the JupyterHub. The host names `jhub-ssh` and `jhub` can be customized to the user's liking. A full example is:
+```
+Host dirac-demo-ssh
+    User stevenstetzler
+    Hostname ssh.demo.dirac.dev
+
+Host dirac-demo
+    User stevenstetzler
+    Hostname demo-stevenstetzler.notebooks
+    ProxyJump dirac-demo-ssh
+```
+
+5. On your local machine, ssh to your running notebook server: `ssh jhub`. 
+
+## Cavets for Amazon Web Services
+
+The SSH service prefers to have a static IP assigned to it. For some cloud providers, the default Kubernetes Service type that we use for the SSH service, the `LoadBalancer`, will be a static IP. However, AWS will instead provision a classic Elastic Load Balancer, which does not use static IP addresses. To obtain static IP functionality, an extra step must be taken to provision a Network Load Balancer instead, which will use a static IP address. See the `README.md` in `cluster` for more details and installation instructions.
+
+Additionally, to support the `gp3` storage class, one must install the AWS EBS CSI driver. See the `README.md` in `cluster` for more details and installation instructions.
+
 # Build on this Helm chart
 
 ```

@@ -3,6 +3,35 @@ nfs-server-provisioner:
     enabled: true
     size: 10Gi
 
+ssh:
+  enabled: true
+  image:
+    name: astronomycommons/jupyterhub-ssh
+    tag: 0.0.6
+  hostname: ssh
+  config:
+    jump:
+      ssh_config:
+      sshd_config: 
+        PasswordAuthentication: "no"
+        ClientAliveInterval: 15
+    user:
+      ssh_config:
+      sshd_config: 
+        PasswordAuthentication: "no"
+        ClientAliveInterval: 15
+
+  pre_ssh_start:
+    # 000-copy-config.sh: |
+    #   cp -r /etc/_ssh/* /etc/ssh/.
+  
+  post_ssh_start:
+    # TODO: Update to remove reference to /home/admin
+    #       may require update to Dockerfile
+    # Require ssh_config.d and sshd_config.d to be copied over to NFS volume
+    # 000-copy-config.sh: |
+    #   cp -r /etc/_ssh/* /home/admin/ssh/server/.
+
 mariadb:
   auth:
     rootPassword: root
@@ -19,14 +48,83 @@ mariadb:
       mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /tmp/hive-schema-2.3.0.mysql.sql;"
 
 jupyterhub:
+  custom:
+    host_tag: jupyter
   rbac:
     enabled: true
   hub:
+    containerSecurityContext:
+      runAsUser: 0
+      runAsGroup: 0
+    extraVolumes:
+    - name: "nfs-homes-volume"
+      persistentVolumeClaim:
+        claimName: "nfs-homes"
+    extraVolumeMounts:
+    - name: "nfs-homes-volume"
+      mountPath: "/home"
     allowNamedServers: true
     # db:
     #   pvc:
     #     storageClassName: nfs
     extraConfig:
+      # Create admin users
+      000-admin-setup: |
+        import os
+        if not os.path.exists("/home/admin/etc/sudoers.d"):
+          os.makedirs("/home/admin/etc/sudoers.d")
+        
+        os.chown("/home/admin", 999, 996)
+        os.chown("/home/admin/etc", 999, 996)
+
+        admin_users = list(c.Authenticator.admin_users)
+        if len(admin_users) != 0:
+          admin_users = ["admin"] + admin_users
+        else:
+          admin_users = ["admin"]
+        
+        if admin_users:
+          with open(f"/home/admin/etc/sudoers.d/01-define-admins", "w") as _file:
+            admins_str = ", ".join(admin_users)
+            _file.write(f"User_Alias ADMINS = {admins_str}\n")
+          
+          with open(f"/home/admin/etc/sudoers.d/02-admins-can-run-as-admin", "w") as _file:
+            _file.write("ADMINS  ALL=(admin)     NOPASSWD: ALL\n")
+          
+          with open(f"/home/admin/etc/sudoers.d/03-admins-can-run-as-root", "w") as _file:
+            _file.write("ADMINS  ALL=(root)     NOPASSWD: ALL\n")
+        
+      ssh_config: |
+        from z2jh import get_config
+        if get_config("custom.host_tag"):
+          host_tag = get_config("custom.host_tag")
+        else:
+          host_tag = "jupyter"
+        def modify_pod_hook(spawner, pod):
+          pod.spec.subdomain = "notebooks"
+          if spawner._expand_user_properties("{servername}"):
+            pod.spec.hostname = spawner._expand_user_properties(host_tag + "-{username}-{servername}")
+          else:
+            pod.spec.hostname = spawner._expand_user_properties(host_tag + "-{username}")
+          return pod
+
+        c.KubeSpawner.modify_pod_hook = modify_pod_hook
+
+        c.KubeSpawner.extra_container_config = {
+          'ports': [
+            {
+              'containerPort': 8888,
+              'name': 'notebook-port',
+              'protocol': 'TCP'
+            },
+            {
+              'containerPort': 22, 
+              'name': 'ssh-port', 
+              'protocol': 'TCP'
+            }
+          ]
+        }
+
       run_user_as_root: |
         c.KubeSpawner.uid = 0
         c.Spawner.args.append("--allow-root")
@@ -49,8 +147,9 @@ jupyterhub:
             auth_state = yield user.get_auth_state()
             if auth_state:
               if auth_state.get("github_user", None):
+                # get GitHub user id
                 spawner.environment["NB_UID"] = str(auth_state["github_user"]["id"])
-                # spawner.environment["NB_USER"] = str(auth_state["github_user"]["login"])
+                # pass JupyterHub username as NB_USER 
                 spawner.environment["NB_USER"] = str(user.name)
                 return
 
@@ -66,7 +165,7 @@ jupyterhub:
   singleuser:
     image: 
       name: astronomycommons/public-hub-singleuser
-      tag: deploy
+      tag: 0.5.0
       pullPolicy: Always
     # assigns the notebook pod the service account called jupyter-spark-serviceaccount in the k8s cluster
     # this service account is created if rbac.enabled is set to true in this Helm chart
@@ -101,6 +200,9 @@ jupyterhub:
       - name: "nfs-kernels-volume"
         persistentVolumeClaim:
           claimName: "nfs-kernels"
+      - name: "ssh-config-volume"
+        configMap:
+          name: "ssh-config-map"
       extraVolumeMounts:
       # mount spark configurations from configMap
       # mount spark-defaults.conf to spark-defaults.conf.static
@@ -120,11 +222,14 @@ jupyterhub:
       - name: "spark-config-volume"
         mountPath: "/opt/axs/conf/executor.yaml.static"
         subPath: "executor.yaml"
-      # mount the efs-backed filesystem to /nfs
-      # creates a folder for the user in /nfs and /nfs contains all other users
+      - name: "spark-config-volume"
+        mountPath: "/opt/axs/conf/log4j.properties"
+        subPath: "log4j.properties"
+      # mount NFS
+      # creates a folder for the user in /home and /home contains all other users
       - name: "nfs-homes-volume"
         mountPath: "/home/{username}"
-        # subPath creates a folder within the efs filesystem for the user
+        # subPath creates a folder within the NFS filesystem for the user
         subPath: "{username}"
       - name: "nfs-homes-volume"
         mountPath: "/home"
@@ -137,6 +242,12 @@ jupyterhub:
         mountPath: "/usr/local/bin/start-notebook.d"
       - name: "before-notebook-volume"
         mountPath: "/usr/local/bin/before-notebook.d"
+      - name: ssh-config-volume
+        subPath: ssh_config_user
+        mountPath: /etc/_ssh/ssh_config.d/chart.conf
+      - name: ssh-config-volume
+        subPath: sshd_config_user
+        mountPath: /etc/_ssh/sshd_config.d/chart.conf
 
 spark-defaults.conf:
   000-s3-defaults: |
@@ -207,6 +318,95 @@ start-notebook:
     merge "$SPARK_HOME/conf/hive-site.xml"
     merge "$SPARK_HOME/conf/executor.yaml"
 
+before-notebook:
+  001-ssh-setup.sh: |
+    echo "Starting SSH setup"
+    # load ssh config from NFS
+    server_config_dir="/home/admin/ssh/users/$NB_USER"
+    user_ssh_dir="/home/$NB_USER/.ssh"
+    sudo -u $NB_USER mkdir -p ${user_ssh_dir}
+
+    # generate new host keys
+    rm -rf /etc/ssh/*key*
+    ssh-keygen -A
+
+    # Create server config directory and copy over keys, if these don't exist
+    if [ ! -d ${server_config_dir} ]
+    then
+      echo "${server_config_dir} does not exist. Creating it and copying over contents of /etc/ssh/"
+      # Back up host keys and config to NFS
+      mkdir -p ${server_config_dir}
+      cp -r /etc/ssh/* ${server_config_dir}/.
+    fi
+    
+    # link to host keys and config on NFS
+    rm -rf /etc/ssh
+    ln -s ${server_config_dir} /etc/ssh
+
+    # Set-up public/private keys for user
+    if test -f "${user_ssh_dir}/id_rsa"; then
+      echo "ssh key-pair already exists"
+    else
+      echo "creating ssh key-pair"
+      sudo -u $NB_USER ssh-keygen -t rsa -q -f "${user_ssh_dir}/id_rsa" -N "" || echo "could not create ssh key pair!"
+      cat ${user_ssh_dir}/id_rsa.pub >> ${user_ssh_dir}/authorized_keys
+      chown -R $NB_USER:$NB_GID ${user_ssh_dir}
+    fi
+
+    # restrict logins to only the notebook user
+    if grep "AllowUsers $NB_USER" /etc/ssh/sshd_config 2>&1 > /dev/null; then
+      echo "AllowUsers $NB_USER exists in /etc/ssh/sshd_config"
+    else
+      echo "Adding AllowUsers $NB_USER to /etc/ssh/sshd_config"
+      echo "AllowUsers $NB_USER" >> /etc/ssh/sshd_config
+    fi
+
+    # add config specified via Helm chart
+    if [ -d /etc/_ssh ]; then
+        cat /etc/_ssh/ssh_config.d/chart.conf
+        cp /etc/_ssh/ssh_config.d/chart.conf /etc/ssh/ssh_config.d/.
+        cat /etc/_ssh/sshd_config.d/chart.conf
+        cp /etc/_ssh/sshd_config.d/chart.conf /etc/ssh/sshd_config.d/.
+    fi
+
+    # ensure /run/sshd
+    mkdir -p /run/sshd
+    # print sshd config
+    echo "sshd config:"
+    sshd -T
+    # start ssh service
+    service ssh start
+
+    # add host key fingerprints to known_hosts
+    sudo -u $NB_USER touch ${user_ssh_dir}/known_hosts
+    hosts="localhost $(hostname).notebooks ssh"
+    for host in ${hosts}; do
+      if cat "${user_ssh_dir}/known_hosts" | awk '{print $1}' | grep "${host}" 2>&1 > /dev/null; then
+        echo "Host key for ${host} already in ${user_ssh_dir}/known_hosts"
+      else
+        if nslookup ${host} 2>&1 > /dev/null; then
+          echo "Adding host key for ${host} to ${user_ssh_dir}/known_hosts"
+          ssh-keyscan ${host} 2> /dev/null >> ${user_ssh_dir}/known_hosts
+        else
+          echo "Cannot find host ${host}"
+        fi
+      fi
+    done
+
+    # ensure bash shell on login
+    chsh -s /bin/bash $NB_USER
+  
+  002-skel.sh: |
+    files=".bash_logout .profile .bashrc"
+    for file in ${files}; do
+      user_file=/home/${NB_USER}/${file}
+      if [ -f ${user_file} ]; then
+        echo "${user_file} exists"
+      else
+        sudo -u $NB_USER cp /etc/skel/${file} ${user_file}
+      fi
+    done
+    
 nfs-pvcs:
   nfs:
     name: nfs
