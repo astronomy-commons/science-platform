@@ -8,12 +8,17 @@
 
 # Deploying
 
-Creating the cluster
+Creating the cluster:
 ```
 eksctl create cluster -f ./cluster/eksctl_config.yaml
 ```
 
-Create a secret token to secure the JupyterHub Proxy API:
+Add the cluster autoscaler. First update the values in `values-autoscaler.yaml`. You should update `clusterName` and `awsRegion` to match your EKS configuration, and change `tag` to match your Kubernetes version. Next install to the cluster with:
+```
+./scripts/install_autoscaler.sh
+```
+
+Install the JupyterHub. First create a secret token to secure the JupyterHub Proxy API:
 ```
 token=$(openssl rand -hex 32)
 printf "jupyterhub:\n  proxy:\n    secretToken: ${token}\n" >> values-customize.yaml
@@ -108,8 +113,6 @@ jupyterhub:
         - read:user
         - read:org
 ```
-
-# Admin users
 
 # SSH
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Create a new chart archive versioned
 # Chart version depends on the value in Chart.yaml
 # archives added to docs/ and the index.yaml there

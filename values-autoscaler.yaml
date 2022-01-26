@@ -1,0 +1,8 @@
+autoDiscovery:
+  clusterName: pufsalad
+
+awsRegion: us-west-2
+
+image:
+  # minor version should match the Kubernetes version in use
+  tag: "v1.18.3"
