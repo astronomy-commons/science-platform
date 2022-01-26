@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   public-hub:
   - apiVersion: v1
-    created: "2022-01-26T01:29:55.629534518Z"
+    created: "2022-01-26T02:54:30.394084344Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -26,7 +26,31 @@ entries:
     - public-hub-0.6.0.tgz
     version: 0.6.0
   - apiVersion: v1
-    created: "2022-01-26T01:29:55.617659657Z"
+    created: "2022-01-26T02:54:30.355583878Z"
+    dependencies:
+    - name: jupyterhub
+      repository: https://jupyterhub.github.io/helm-chart/
+      version: 1.1.3
+    - name: nfs-server-provisioner
+      repository: https://charts.helm.sh/stable
+      version: 1.1.3
+    - name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.5
+    - name: cluster-autoscaler-chart
+      repository: https://kubernetes.github.io/autoscaler
+      version: 2.0.0
+    description: JupyterHub with Integration for the Astronomy Data Commons tools
+    digest: 5327e74e970b2cb3c557478e6e25da28142f0aa7faae1092b146e671ff8bf71f
+    maintainers:
+    - email: stevengs@uw.edu
+      name: Steven Stetzler
+    name: public-hub
+    urls:
+    - public-hub-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v1
+    created: "2022-01-26T02:54:30.344491084Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -53,7 +77,7 @@ entries:
     - public-hub-0.4.tgz
     version: "0.4"
   - apiVersion: v1
-    created: "2022-01-26T01:29:55.599444419Z"
+    created: "2022-01-26T02:54:30.311068794Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -77,7 +101,7 @@ entries:
     - public-hub-0.3.tgz
     version: "0.3"
   - apiVersion: v1
-    created: "2022-01-26T01:29:55.586290329Z"
+    created: "2022-01-26T02:54:30.281580274Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -101,7 +125,7 @@ entries:
     - public-hub-0.2.tgz
     version: "0.2"
   - apiVersion: v1
-    created: "2022-01-26T01:29:55.573261843Z"
+    created: "2022-01-26T02:54:30.26024973Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -124,4 +148,4 @@ entries:
     urls:
     - public-hub-0.1.tgz
     version: "0.1"
-generated: "2022-01-26T01:29:55.561313337Z"
+generated: "2022-01-26T02:54:30.228796687Z"
