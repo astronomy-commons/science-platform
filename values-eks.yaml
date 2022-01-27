@@ -27,8 +27,10 @@ jupyterhub:
 
 nfs-server-provisioner:
   persistence:
-    storageClass: "gp2"
+    storageClass: "gp2-immediate"
     size: 200Gi
+  storageClass:
+    name: "nfs-hub"
   nodeSelector:
     dirac.institute/instance-type: "service"
 
@@ -40,12 +42,12 @@ mariadb:
     nodeSelector:
       dirac.institute/instance-type: "service"
 
-cluster-autoscaler-chart:
-  awsRegion: "us-west-2"
-  autoDiscovery:
-    clusterName: "pufsalad"
-  nodeSelector:
-    dirac.institute/instance-type: "service"
+# cluster-autoscaler-chart:
+#   awsRegion: "us-west-2"
+#   autoDiscovery:
+#     clusterName: "pufsalad"
+#   nodeSelector:
+#     dirac.institute/instance-type: "service"
 
 spark-defaults.conf:
   999-executor-defaults: |

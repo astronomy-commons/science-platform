@@ -1,7 +1,8 @@
 nfs-server-provisioner:
   persistence:
     enabled: true
-    size: 10Gi
+  storageClass:
+    name: nfs
 
 ssh:
   enabled: true

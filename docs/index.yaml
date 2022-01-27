@@ -2,7 +2,28 @@ apiVersion: v1
 entries:
   public-hub:
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.230998639Z"
+    created: "2022-01-27T00:24:53.956234766Z"
+    dependencies:
+    - name: jupyterhub
+      repository: https://jupyterhub.github.io/helm-chart/
+      version: 1.1.3
+    - name: mariadb
+      repository: https://charts.bitnami.com/bitnami/
+      version: 9.3.5
+    - name: nfs-server-provisioner
+      repository: https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+      version: 1.4.0
+    description: JupyterHub with Integration for the Astronomy Data Commons tools
+    digest: 43b51132c2ea7ec2d9bd1976a1cefca6fe9ed50c911e0a8a914b728e1c5c3c37
+    maintainers:
+    - email: stevengs@uw.edu
+      name: Steven Stetzler
+    name: public-hub
+    urls:
+    - public-hub-0.6.2.tgz
+    version: 0.6.2
+  - apiVersion: v1
+    created: "2022-01-27T00:24:53.942464526Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -14,7 +35,7 @@ entries:
       repository: https://charts.bitnami.com/bitnami
       version: 9.3.5
     description: JupyterHub with Integration for the Astronomy Data Commons tools
-    digest: 0c01af19f14d0cf8e5544f9a2df6149f77f261e1f73a86c01e3cefeecca51a09
+    digest: 8dce998a0077d61c7becaf136890e931d8cfe084ee9c96e52f6a349535427266
     maintainers:
     - email: stevengs@uw.edu
       name: Steven Stetzler
@@ -23,7 +44,7 @@ entries:
     - public-hub-0.6.1.tgz
     version: 0.6.1
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.222315056Z"
+    created: "2022-01-27T00:24:53.929290965Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -47,7 +68,7 @@ entries:
     - public-hub-0.6.0.tgz
     version: 0.6.0
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.209953555Z"
+    created: "2022-01-27T00:24:53.914541248Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -71,7 +92,7 @@ entries:
     - public-hub-0.5.0.tgz
     version: 0.5.0
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.198461733Z"
+    created: "2022-01-27T00:24:53.901936668Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -98,7 +119,7 @@ entries:
     - public-hub-0.4.tgz
     version: "0.4"
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.185640726Z"
+    created: "2022-01-27T00:24:53.888289978Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -122,7 +143,7 @@ entries:
     - public-hub-0.3.tgz
     version: "0.3"
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.174950442Z"
+    created: "2022-01-27T00:24:53.873624764Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -146,7 +167,7 @@ entries:
     - public-hub-0.2.tgz
     version: "0.2"
   - apiVersion: v1
-    created: "2022-01-26T03:51:27.162974053Z"
+    created: "2022-01-27T00:24:53.857363818Z"
     dependencies:
     - name: jupyterhub
       repository: https://jupyterhub.github.io/helm-chart/
@@ -169,4 +190,4 @@ entries:
     urls:
     - public-hub-0.1.tgz
     version: "0.1"
-generated: "2022-01-26T03:51:27.151733821Z"
+generated: "2022-01-27T00:24:53.845648626Z"

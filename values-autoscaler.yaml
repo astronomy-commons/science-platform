@@ -2,6 +2,8 @@ autoDiscovery:
   clusterName: pufsalad
 
 awsRegion: us-west-2
+nodeSelector:
+  dirac.institute/instance-type: "service"
 
 image:
   # minor version should match the Kubernetes version in use
