@@ -3,11 +3,12 @@ apiVersion: eksctl.io/v1alpha5
 metadata:
   name: "pufsalad"
   region: "us-west-2"
-  version: "1.18"
+  version: "1.22"
 availabilityZones: ["us-west-2b", "us-west-2c", "us-west-2d"]
 managedNodeGroups:
   - name: "service-nodes-2d"
     instanceType: t3.medium
+    spot: true
     availabilityZones: ["us-west-2d"]
     minSize: 1
     maxSize: 1
@@ -22,6 +23,7 @@ managedNodeGroups:
       k8s.io/cluster-autoscaler/node-template/label/dirac.institute/instance-type: "service"
   - name: "notebook-nodes-2d"
     instanceType: t3.xlarge
+    spot: true
     availabilityZones: ["us-west-2d"]
     minSize: 1
     maxSize: 16
