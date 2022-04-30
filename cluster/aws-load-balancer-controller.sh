@@ -37,8 +37,8 @@ else
     eksctl utils associate-iam-oidc-provider --cluster=${CLUSTER_NAME} --approve
 fi
 
-# https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.3/deploy/installation/#add-controller-to-cluster
-curl -o load_balancer/iam-policy-${POLICY_NAME}.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.0/docs/install/iam_policy.json
+# https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/deploy/installation/#add-controller-to-cluster
+curl -o load_balancer/iam-policy-${POLICY_NAME}.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.1/docs/install/iam_policy.json
 
 policy_exists=$(aws iam list-policies | jq -r '.Policies | .[].PolicyName ' | grep ${POLICY_NAME})
 if [ $policy_exists ]; then
@@ -70,7 +70,7 @@ echo "Made role: ${role_arn}"
 # Install cert-manager
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
 # Download spec for load balancer controller
-wget -O load_balancer/lb_pre.yaml https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.3.0/v2_3_0_full.yaml 
+wget -O load_balancer/lb_pre.yaml https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.4.1/v2_4_1_full.yaml 
 # replace cluster name
 sed -i "s/your-cluster-name/${CLUSTER_NAME}/g" load_balancer/lb_pre.yaml
 
