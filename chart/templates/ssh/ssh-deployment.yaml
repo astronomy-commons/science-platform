@@ -17,6 +17,7 @@ spec:
       labels:
         app: jupyterhub
         component: ssh-server
+        hub.jupyter.org/network-access-singleuser: "true"
     spec:
       hostname: {{ .Values.ssh.hostname }}
       containers:

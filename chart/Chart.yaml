@@ -1,7 +1,9 @@
 apiVersion: v1
 name: "public-hub"
-version: 0.6.2
+version: 0.6.3
 description: "JupyterHub with Integration for the Astronomy Data Commons tools"
 maintainers:
   - name: "Steven Stetzler"
     email: "stevengs@uw.edu"
+  - name: "Carl L Christofferson"
+    email: "cchris28@uw.edu"

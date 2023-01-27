@@ -8,7 +8,7 @@ ssh:
   enabled: true
   image:
     name: astronomycommons/jupyterhub-ssh
-    tag: 0.0.6
+    tag: 0.0.7
   hostname: ssh
   config:
     jump:
@@ -43,10 +43,32 @@ mariadb:
   initdbScripts:
     hive-schema.sh: |
       #!/bin/bash
-      cd /tmp
-      curl -s -O https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-txn-schema-2.3.0.mysql.sql
-      curl -s -O https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-schema-2.3.0.mysql.sql
-      mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /tmp/hive-schema-2.3.0.mysql.sql;"
+      cd /init_scripts
+      mysql -P 3306 -uroot -p$MARIADB_ROOT_PASSWORD -e "use $MARIADB_DATABASE; source /init_scripts/hive-schema-2.3.0.mysql.sql;"
+
+  primary:
+    extraVolumes:
+    - name: init-scripts
+      emptyDir:
+        sizeLimit: 1Mi
+    extraVolumeMounts:
+    - name: init-scripts
+      mountPath: /init_scripts
+    initContainers:
+    - name: get-init-scripts
+      image: busybox:1.34.1
+      command: ["/bin/sh","-c"]
+      args:
+      - echo "getting init scripts";
+        cd /init_scripts;
+        wget https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-txn-schema-2.3.0.mysql.sql;
+        wget https://raw.githubusercontent.com/apache/hive/rel/release-2.3.6/metastore/scripts/upgrade/mysql/hive-schema-2.3.0.mysql.sql;
+        echo "done"
+      volumeMounts:
+      - name: init-scripts
+        mountPath: /init_scripts
+
+
 
 jupyterhub:
   custom:
@@ -65,9 +87,9 @@ jupyterhub:
     - name: "nfs-homes-volume"
       mountPath: "/home"
     allowNamedServers: true
-    # db:
-    #   pvc:
-    #     storageClassName: nfs
+    config:
+      Authenticator:
+        admin_users: [] # has to be set in order for 000-admin-setup to work, when c.Authenticator.admin_users is accessed
     extraConfig:
       # Create admin users
       000-admin-setup: |
@@ -164,6 +186,9 @@ jupyterhub:
         c.Authenticator.enable_auth_state = True
         
   singleuser:
+    networkPolicy:
+      allowedIngressPorts:
+      - 22
     image: 
       name: astronomycommons/public-hub-singleuser
       tag: 0.6.1
