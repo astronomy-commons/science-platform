@@ -88,12 +88,17 @@ RUN cd /tmp \
  && tar xf axs-distribution.tar.gz --strip 1 -C $SPARK_HOME \
  && rm axs-distribution.tar.gz \
  # Install required jars for Spark
- && cd $SPARK_HOME/jars \
+ cd $SPARK_HOME/jars \
  # access to AWS S3
  && curl -O -s https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
  && curl -O -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
+ # access to Azure storage
+ && curl -O -s https://repo1.maven.org/maven2/org/wildfly/openssl/wildfly-openssl/1.0.7.Final/wildfly-openssl-1.0.7.Final.jar \
+ && curl -O -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-azure/3.2.2/hadoop-azure-3.2.2.jar \
  # Connector for MariaDB for Spark metastore
- && curl -O -s https://downloads.mariadb.com/Connectors/java/connector-java-2.7.3/mariadb-java-client-2.7.3.jar
+ && curl -O -s https://downloads.mariadb.com/Connectors/java/connector-java-2.7.3/mariadb-java-client-2.7.3.jar \
+ # Postgres connector
+ && curl -O -s https://jdbc.postgresql.org/download/postgresql-42.5.1.jar
 
 # Install mamba
 RUN conda install --quiet --yes -c conda-forge mamba
@@ -132,7 +137,8 @@ RUN python -m pip install \
     jupyterlab-topbar \
     jupyterlab-system-monitor \
     nbgitpuller \
-    dask_kubernetes
+    dask_kubernetes \
+    adlfs
 
 # Install labextensions
 RUN jupyter labextension install \

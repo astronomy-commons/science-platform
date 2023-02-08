@@ -20,11 +20,16 @@ data:
 {{ else }}
 {{ end }}
   hive-site.xml: |-
-{{- if index .Values "hive-site.xml" }}
-{{ index .Values "hive-site.xml" | indent 4 }}
-{{ else }}
     <?xml version="1.0" encoding="UTF-8" standalone="no"?>
     <configuration>
+{{- if index .Values "hive-site.xml" -}}
+{{ range $key, $value := index .Values "hive-site.xml" }}
+      <property>
+        <name>{{ $key }}</name>
+        <value>{{ $value }}</value>
+      </property>
+{{- end -}}
+{{ end }}
       <property>
         <name>javax.jdo.option.ConnectionURL</name>
         <value>jdbc:mysql://{{ .Release.Name }}-mariadb:{{ .Values.mariadb.primary.service.port }}/{{ .Values.mariadb.auth.database }}</value>
@@ -46,7 +51,6 @@ data:
         <value>true</value>
       </property>
     </configuration>
-{{ end }}
   log4j.properties: |-
 {{- if index .Values "log4j.properties" }}
 {{ index .Values "log4j.properties" | indent 4 }}
