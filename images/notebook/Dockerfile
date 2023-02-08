@@ -11,7 +11,8 @@ FROM jupyterhub/k8s-singleuser-sample:1.1.3
 USER root
 
 # Update cache
-RUN apt-get -y update \
+RUN apt -y update \
+ && apt-get -y update \
  && apt-get -y install apt-file \
  && apt-file update
 
@@ -37,7 +38,7 @@ RUN apt-get install -y --fix-missing \
     htop
 
 # Install Desktop
-RUN apt-get -y install \
+RUN apt-get install -y --fix-missing \
     dbus-x11 \
     xfce4 \
     xfce4-panel \
@@ -88,7 +89,7 @@ RUN cd /tmp \
  && tar xf axs-distribution.tar.gz --strip 1 -C $SPARK_HOME \
  && rm axs-distribution.tar.gz \
  # Install required jars for Spark
- cd $SPARK_HOME/jars \
+ && cd $SPARK_HOME/jars \
  # access to AWS S3
  && curl -O -s https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.874/aws-java-sdk-bundle-1.11.874.jar \
  && curl -O -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar \
