@@ -7,7 +7,7 @@ $ docker build --platform linux/amd64 . -t astronomycommons/lincc-notebook:testi
 - Click "Generate new token" --> "Generate new token (classic)"
 - Add "read:user" and "read:org" permissions
 - Click "Generate token"
-- Copy the token to "GH_TOKEN=..." in
+- Copy the token to "GH_TOKEN=..." in step (4)
 
 3. Create `run.env`:
 ```
