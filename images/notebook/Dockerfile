@@ -1,4 +1,4 @@
-FROM jupyterhub/k8s-singleuser-sample:1.1.3
+FROM quay.io/jupyter/base-notebook:ubuntu-22.04 
 
 # Add RUN statements to install packages as the $NB_USER defined in the base images.
 
@@ -37,7 +37,7 @@ RUN apt-get install -y --fix-missing \
     openssh-server \
     htop
 
-# Install Desktop
+# Install Desktop https://github.com/jupyterhub/jupyter-remote-desktop-proxy
 RUN apt-get install -y --fix-missing \
     dbus-x11 \
     xfce4 \
@@ -46,6 +46,9 @@ RUN apt-get install -y --fix-missing \
     xfce4-settings \
     xorg \
     xubuntu-icon-theme \
+    tigervnc-standalone-server \
+    tigervnc-xorg-extension \
+    # Install web browser
     firefox \
  # Disable creation of Music, Documents, etc.. directories
  # ref: https://unix.stackexchange.com/questions/268720/who-is-creating-documents-video-pictures-etc-in-home-directory
@@ -68,7 +71,8 @@ RUN groupadd -g 996 admin \
  # get sudoers config from file on NFS
  && echo "#includedir /home/admin/etc/sudoers.d" >> /etc/sudoers
 
-
+RUN mkdir -p /opt/conda \
+ && mkdir -p /opt/axs
 # Update conda permissions
 RUN chown -R admin:admin /opt
 
@@ -85,7 +89,7 @@ ENV PATH $PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
 RUN cd /tmp \
  # Download AXS
  && wget -q -O axs-distribution.tar.gz https://github.com/astronomy-commons/axs/releases/download/${AXS_VERSION}/axs-${AXS_VERSION}.tgz \
- && mkdir $SPARK_HOME \
+ && mkdir -p $SPARK_HOME \
  && tar xf axs-distribution.tar.gz --strip 1 -C $SPARK_HOME \
  && rm axs-distribution.tar.gz \
  # Install required jars for Spark
@@ -101,49 +105,19 @@ RUN cd /tmp \
  # Postgres connector
  && curl -O -s https://jdbc.postgresql.org/download/postgresql-42.5.1.jar
 
-# Install mamba
-RUN conda install --quiet --yes -c conda-forge mamba
-
-# Install packages from main conda repository
+# Install conda packages
 RUN mamba install --quiet --yes \
-    # Install AXS dependencies: pyarrow, numpy, pandas, healpy
-    'pyarrow' \
-    'numpy' \
-    'pandas' \
-    'healpy' \    
-    # pytables for Pandas, allows reading of hdf5 files
-    'pytables' \
-    # plotting
-    'matplotlib' \
-    # pulling demo notebooks
-    'nbgitpuller' \
-    # interacting with K8s cluster
-    'python-kubernetes' \
-    # Dask
-    'dask'
-    
-# Install packages from conda forge
-RUN mamba install --quiet --yes -c conda-forge \
-    # server proxy extension
-    'jupyter-server-proxy' \
-    # resource usage extension
-    'jupyter-resource-usage'
+    pytables \
+    nb_conda_kernels
 
-# Install jupyter-desktop-server
-RUN mamba install -c manics websockify \
- && pip install git+https://github.com/mjuric/jupyter-desktop-server
-
-# Install packages with pip
-RUN python -m pip install \
-    jupyterlab-topbar \
-    jupyterlab-system-monitor \
-    nbgitpuller \
-    dask_kubernetes \
-    adlfs
-
-# Install labextensions
-RUN jupyter labextension install \
-    jupyterlab-topbar-text
+# Install Python requirements
+COPY requirements.txt requirements.txt
+ARG PIP_CACHE_DIR=/tmp/pip-cache
+RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
+    pip install build \
+ && pip wheel \
+        --wheel-dir=/tmp/wheels \
+        -r requirements.txt
 
 # Clean Conda
 RUN conda clean --all -f -y

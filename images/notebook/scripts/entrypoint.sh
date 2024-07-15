@@ -31,7 +31,8 @@ case "$1" in
     *)
       source /usr/local/bin/pre-start-source.sh
       export CONTAINER_TYPE="notebook"
-      CMD=("/usr/local/bin/start-notebook.sh"
+      CMD=("/usr/local/bin/start.sh"
+           "/usr/local/bin/start-notebook.sh"
            "${@:2}")
       ;;
 esac
