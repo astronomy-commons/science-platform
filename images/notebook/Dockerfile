@@ -53,6 +53,8 @@ RUN apt-get install -y --fix-missing \
  # Disable creation of Music, Documents, etc.. directories
  # ref: https://unix.stackexchange.com/questions/268720/who-is-creating-documents-video-pictures-etc-in-home-directory
  && apt-get remove -y xdg-user-dirs \
+ # Disable screensaver/lock screen
+ && apt-get remove -y xfce4-screensaver \
  # Disable the Applications|Log Out menu item in XFCE
  # ref: https://github.com/yuvipanda/jupyter-desktop-server/issues/16
  && rm -f /usr/share/applications/xfce4-session-logout.desktop
