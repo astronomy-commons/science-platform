@@ -108,16 +108,12 @@ RUN cd /tmp \
 # Install conda packages
 RUN mamba install --quiet --yes \
     pytables \
-    nb_conda_kernels
+    nb_conda_kernels \
+    websockify
 
 # Install Python requirements
 COPY requirements.txt requirements.txt
-ARG PIP_CACHE_DIR=/tmp/pip-cache
-RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
-    pip install build \
- && pip wheel \
-        --wheel-dir=/tmp/wheels \
-        -r requirements.txt
+RUN python -m pip install -r requirements.txt
 
 # Clean Conda
 RUN conda clean --all -f -y
