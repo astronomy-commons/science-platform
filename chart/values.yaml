@@ -8,7 +8,7 @@ ssh:
   enabled: true
   image:
     name: astronomycommons/jupyterhub-ssh
-    tag: 0.0.7
+    tag: 0.1.0
   hostname: ssh
   config:
     jump:
@@ -191,7 +191,7 @@ jupyterhub:
       - 22
     image: 
       name: astronomycommons/public-hub-singleuser
-      tag: 0.6.1
+      tag: 0.7.0
       pullPolicy: Always
     # assigns the notebook pod the service account called jupyter-spark-serviceaccount in the k8s cluster
     # this service account is created if rbac.enabled is set to true in this Helm chart
