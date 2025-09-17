@@ -147,7 +147,7 @@ Host dirac-demo
 
 5. On your local machine, ssh to your running notebook server: `ssh jhub`. 
 
-## Cavets for Amazon Web Services
+## Caveats for Amazon Web Services
 
 The SSH service prefers to have a static IP assigned to it. For some cloud providers, the default Kubernetes Service type that we use for the SSH service, the `LoadBalancer`, will be a static IP. However, AWS will instead provision a classic Elastic Load Balancer, which does not use static IP addresses. To obtain static IP functionality, an extra step must be taken to provision a Network Load Balancer instead, which will use a static IP address. See the `README.md` in `cluster` for more details and installation instructions.
 
