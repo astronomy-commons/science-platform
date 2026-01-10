@@ -5,3 +5,5 @@ values-customize.yaml
 cluster/load_balancer
 cluster/ebs_driver
 cluster/*.json
+
+run.env
